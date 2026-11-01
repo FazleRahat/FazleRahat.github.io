@@ -842,21 +842,24 @@ test.describe('research areas', () => {
   });
 
   test('a click or tap keeps the popup open until the next click, and every popup fits a phone screen', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('');
-    const terms = page.locator('.bio [data-interest-term]');
-    for (let index = 0; index < (await terms.count()); index += 1) {
-      const trigger = terms.nth(index).locator('[data-interest-trigger]');
-      const popup = terms.nth(index).locator('.interest-popup');
-      await trigger.click();
-      await expect(popup).toBeVisible();
-      const box = (await popup.boundingBox())!;
-      expect(box.x, `popup ${index}`).toBeGreaterThanOrEqual(0);
-      expect(box.x + box.width, `popup ${index}`).toBeLessThanOrEqual(390);
-      await page.mouse.move(2, 2);
-      await expect(popup).toBeVisible();
-      await trigger.click();
-      await expect(popup).toBeHidden();
+    // Where a term wraps depends on the font rendering, so a run of widths covers the terms near each edge.
+    for (const width of [320, 340, 360, 375, 390, 412, 430, 480, 540, 600]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('');
+      const terms = page.locator('.bio [data-interest-term]');
+      for (let index = 0; index < (await terms.count()); index += 1) {
+        const trigger = terms.nth(index).locator('[data-interest-trigger]');
+        const popup = terms.nth(index).locator('.interest-popup');
+        await trigger.click();
+        await expect(popup).toBeVisible();
+        const box = (await popup.boundingBox())!;
+        expect(box.x, `popup ${index} at ${width}px`).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width, `popup ${index} at ${width}px`).toBeLessThanOrEqual(width);
+        await page.mouse.move(2, 2);
+        await expect(popup).toBeVisible();
+        await trigger.click();
+        await expect(popup).toBeHidden();
+      }
     }
   });
 
