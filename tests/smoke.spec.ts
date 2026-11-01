@@ -32,7 +32,7 @@ test.describe('routes and utility endpoints', () => {
     }
     expect((await request.get(rel('/robots.txt'))).status()).toBe(200);
     expect((await request.get(rel('/sitemap-index.xml'))).status()).toBe(200);
-    expect((await request.get(rel('/social/default.png'))).status()).toBe(200);
+    expect((await request.get(rel('/social/profile-card.png'))).status()).toBe(200);
   });
 
   test('an unknown URL returns a real 404 with recovery links', async ({ page }) => {
@@ -200,6 +200,8 @@ test.describe('home page: compact profile header', () => {
       await page.locator('.profile').getByRole('link', { name: 'Email', exact: true }).click();
       await expect(page).toHaveURL(/#contact$/);
       await expect(page.locator('footer #contact')).toBeInViewport();
+      await expect(page.locator('footer #contact')).toHaveClass(/email-highlight/);
+      await expect(page.locator('footer #contact')).not.toHaveClass(/email-highlight/, { timeout: 4000 });
       const personal = page.locator('footer #contact [data-email-kind="personal"] a svg');
       const school = page.locator('footer #contact [data-email-kind="school"] a svg');
       // Person glyph (circle + body) for the personal address, not an envelope; the school address keeps its own icon.

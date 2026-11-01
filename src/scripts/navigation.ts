@@ -33,4 +33,18 @@ if (menu) {
   });
 }
 
+// The footer can sit below other content, so briefly mark the addresses a link to it has jumped to.
+const contact = document.querySelector<HTMLElement>('#contact');
+
+if (contact) {
+  let timer = 0;
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target as Element).closest('a[href="#contact"]')) return;
+    contact.classList.add('email-highlight');
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => contact.classList.remove('email-highlight'), 1800);
+  });
+}
+
 export {};

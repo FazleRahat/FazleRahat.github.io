@@ -19,7 +19,8 @@ const label = kind === 'personal' ? 'Personal email' : 'School email';
 <style>
   .email-contact, a { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
   a { min-height: 44px; font-size: 0.875rem; }
-  a span { overflow-wrap: anywhere; }
+  a span { overflow-wrap: anywhere; border-radius: 1px; transition: background-color 400ms ease, box-shadow 400ms ease, color 400ms ease; }
+  :global(.email-highlight) a span { background: var(--color-accent); box-shadow: 0 0 0 4px var(--color-accent); color: var(--color-on-accent); }
   a :global(svg) { flex-shrink: 0; }
   .copy-email { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--color-accent); cursor: pointer; flex-shrink: 0; }
   .copy-email:hover { color: var(--color-text); }

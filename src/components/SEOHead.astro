@@ -16,8 +16,8 @@ type Props = {
 const { title, description, path, type = 'website', jsonLd = [], noindex = false } = Astro.props;
 
 const canonical = absolute(path);
-const socialImage = absolute('/social/default.png');
-const socialAlt = `${site.siteName} — AI research at Kennesaw State University`;
+const socialImage = absolute('/social/profile-card.png');
+const socialAlt = `${site.siteName}, AI research at Kennesaw State University: Natural Language Processing, Multimodal AI, AI Reliability`;
 const robots = !isIndexable || noindex ? 'noindex, nofollow' : 'index, follow';
 ---
 

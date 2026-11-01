@@ -12,6 +12,7 @@ import { ROOT } from './lib/content-files.mjs';
 
 const pub = (name) => join(ROOT, 'public', name);
 const font = (name) => readFileSync(join(ROOT, 'src/assets/fonts', name)).toString('base64');
+const portrait = readFileSync(join(ROOT, 'src/assets/portrait/portrait.jpg')).toString('base64');
 
 const GREEN = '#2d5a46';
 const PAPER = '#f7f6f2';
@@ -32,14 +33,19 @@ const socialHtml = `<!doctype html><meta charset="utf-8">
   @font-face { font-family: Inter; font-weight: 100 900; src: url(data:font/woff2;base64,${font('inter-latin-wght-normal.woff2')}); }
   @font-face { font-family: Newsreader; font-weight: 200 800; src: url(data:font/woff2;base64,${font('newsreader-latin-wght-normal.woff2')}); }
   html, body { margin: 0; }
-  body { width: 1200px; height: 630px; background: ${PAPER}; display: flex; flex-direction: column; justify-content: center; padding: 0 96px; box-sizing: border-box; border-left: 18px solid ${GREEN}; }
-  .name { font: 600 84px/1.1 Inter; color: ${INK}; letter-spacing: -0.02em; }
-  .role { margin-top: 28px; font: 500 44px/1.25 Newsreader; color: ${GREEN}; }
-  .focus { margin-top: 44px; padding-top: 32px; border-top: 2px solid #d9dfd9; font: 400 30px/1.4 Inter; color: ${MUTED}; max-width: 900px; }
+  body { width: 1200px; height: 630px; background: ${PAPER}; display: flex; align-items: center; gap: 56px; padding: 0 72px; box-sizing: border-box; border-left: 18px solid ${GREEN}; }
+  .text { flex: 1; min-width: 0; }
+  .photo { flex: none; width: 340px; height: 340px; border-radius: 16px; object-fit: cover; object-position: center top; }
+  .name { font: 600 62px/1.12 Inter; color: ${INK}; letter-spacing: -0.02em; }
+  .role { margin-top: 24px; font: 500 34px/1.25 Newsreader; color: ${GREEN}; }
+  .focus { margin-top: 36px; padding-top: 28px; border-top: 2px solid #d9dfd9; font: 400 26px/1.4 Inter; color: ${MUTED}; }
 </style>
-<div class="name">Md. Fazle Rabbi Rahat</div>
-<div class="role">AI research · Kennesaw State University</div>
-<div class="focus">Multimodal AI, retrieval, and reliable human-AI decision support</div>`;
+<div class="text">
+  <div class="name">Md. Fazle Rabbi Rahat</div>
+  <div class="role">AI research · Kennesaw State University</div>
+  <div class="focus">Natural Language Processing<br>Multimodal AI<br>AI Reliability</div>
+</div>
+<img class="photo" alt="" src="data:image/jpeg;base64,${portrait}">`;
 
 const iconHtml = (size) => `<!doctype html><style>html,body{margin:0;background:${GREEN}}svg{display:block;width:${size}px;height:${size}px}</style>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${monogram}</svg>`;
@@ -49,13 +55,13 @@ try {
   const shot = async (html, width, height) => {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
     await page.setContent(html);
-    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map((image) => image.decode())]));
     const png = await page.screenshot({ type: 'png', omitBackground: false });
     await page.close();
     return png;
   };
 
-  writeFileSync(pub('social/default.png'), await shot(socialHtml, 1200, 630));
+  writeFileSync(pub('social/profile-card.png'), await shot(socialHtml, 1200, 630));
   writeFileSync(pub('apple-touch-icon.png'), await shot(iconHtml(180), 180, 180));
 
   // favicon.ico: one 32x32 PNG image inside an ICO container.
@@ -78,4 +84,4 @@ try {
 // The 192 px photo icon from the portrait experiment is no longer used.
 rmSync(pub('icon-192.png'), { force: true });
 
-console.log('Wrote favicon.svg, favicon.ico, apple-touch-icon.png and social/default.png');
+console.log('Wrote favicon.svg, favicon.ico, apple-touch-icon.png and social/profile-card.png');

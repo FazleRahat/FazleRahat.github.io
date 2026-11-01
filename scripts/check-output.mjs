@@ -260,7 +260,7 @@ else {
   if (bytes.length !== content.profile.cv.bytes) problem(cvPath, `size ${bytes.length} differs from manifest ${content.profile.cv.bytes}`);
   if (createHash('sha256').update(bytes).digest('hex') !== content.profile.cv.sha256) problem(cvPath, 'hash differs from manifest');
 }
-for (const asset of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'social/default.png']) {
+for (const asset of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'social/profile-card.png']) {
   if (!fileSet.has(asset) || statSync(join(DIST, asset)).size === 0) problem(asset, 'missing or empty');
 }
 for (const font of ['fonts/OFL-Inter.txt', 'fonts/OFL-Newsreader.txt']) if (!fileSet.has(font)) problem(font, 'font licence missing');
