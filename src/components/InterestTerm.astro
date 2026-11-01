@@ -43,9 +43,11 @@ const { term, href } = Astro.props;
 
     const show = () => {
       popup.hidden = false;
-      // Keep the popup inside the viewport: right-align it when a term sits near the right edge.
-      popup.classList.remove('align-end');
-      if (popup.getBoundingClientRect().right > document.documentElement.clientWidth - 8) popup.classList.add('align-end');
+      // Keep the popup inside the viewport: slide it left only as far as it needs, never past the left edge.
+      popup.style.left = '';
+      const box = popup.getBoundingClientRect();
+      const overflow = box.right - (document.documentElement.clientWidth - 8);
+      if (overflow > 0) popup.style.left = `${-Math.min(overflow, Math.max(box.left - 8, 0))}px`;
       trigger.setAttribute('aria-expanded', 'true');
       open.set(term, hide);
     };
@@ -135,11 +137,6 @@ const { term, href } = Astro.props;
     left: 0;
     padding-top: 6px;
     white-space: nowrap;
-  }
-
-  .interest-popup.align-end {
-    left: auto;
-    right: 0;
   }
 
   .interest-link {
