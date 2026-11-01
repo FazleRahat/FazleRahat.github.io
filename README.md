@@ -1,6 +1,6 @@
 # Md. Fazle Rabbi Rahat: academic website
 
-Source for the academic website of Md. Fazle Rabbi Rahat: research, publications, teaching and CV. It is a static site built with [Astro](https://astro.build/), with no backend, forms, cookies, analytics or third-party scripts.
+Source for the academic website of Md. Fazle Rabbi Rahat, live at <https://fazlerahat.github.io/>: research, publications, teaching and CV. It is a static site built with [Astro](https://astro.build/), with no backend, forms, cookies, analytics or third-party scripts.
 
 ## Run it locally
 
