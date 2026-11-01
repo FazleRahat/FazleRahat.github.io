@@ -1,0 +1,91 @@
+/* Print: always white paper and dark ink, no site chrome. The authored PDF is the
+   authoritative paginated CV; this stylesheet only makes the HTML page useful on paper. */
+@media print {
+  @page {
+    margin: 18mm 16mm;
+  }
+
+  /* Doubled selectors outrank the dark-mode token blocks regardless of the
+     visitor's theme choice or system appearance. */
+  :root:root,
+  :root:root[data-theme='dark'],
+  :root:root[data-theme='light'] {
+    color-scheme: light;
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-text: #111111;
+    --color-muted: #333333;
+    --color-accent: #1d4332;
+    --color-accent-soft: #ffffff;
+    --color-border: #bbbbbb;
+  }
+
+  body {
+    min-height: 0;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  .skip-link,
+  .site-header,
+  .site-footer .theme-control,
+  .site-footer .copy-email,
+  .no-print,
+  button,
+  .nav-menu {
+    display: none !important;
+  }
+
+  .container,
+  .container-wide {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 20pt;
+  }
+
+  h2 {
+    font-size: 14pt;
+    break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    break-after: avoid;
+  }
+
+  .section {
+    margin-top: 14pt;
+    padding-top: 10pt;
+  }
+
+  li,
+  .pub,
+  .role,
+  .timeline-item {
+    break-inside: avoid;
+  }
+
+  /* Keep links readable on paper. */
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .print-urls a[href^='http']::after,
+  .print-urls a[href^='mailto:']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+
+  /* Citation panels are interactive extras; omit from paper. */
+  details.cite {
+    display: none;
+  }
+}

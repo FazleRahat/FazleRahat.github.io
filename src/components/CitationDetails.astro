@@ -1,0 +1,94 @@
+---
+import { toBibtex } from '../lib/citations';
+import type { Publication } from '../lib/schemas';
+import { withBase } from '../lib/site';
+
+type Props = { publication: Publication };
+
+const { publication } = Astro.props;
+const bibtex = toBibtex(publication);
+const bibId = `bibtex-${publication.id}`;
+const href = withBase(`/citations/${publication.citationKey}.bib`);
+---
+
+<details class="cite" data-copy-scope>
+  <summary>Cite<span class="sr-only"> {publication.venueShort} {publication.year} paper</span></summary>
+  <div class="panel">
+    <p class="meta">BibTeX</p>
+    <pre id={bibId} class="bibtex"><code>{bibtex}</code></pre>
+    <div class="actions">
+      <button
+        type="button"
+        class="control"
+        data-copy={bibId}
+        data-copy-success="BibTeX copied."
+        data-copy-fallback="Select and copy the citation below."
+        hidden>Copy BibTeX</button
+      >
+      <a class="button" href={href} download>Download .bib</a>
+      <span class="meta" data-copy-status role="status"></span>
+    </div>
+  </div>
+</details>
+
+<style>
+  details {
+    margin-top: var(--space-1);
+  }
+
+  summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::before {
+    content: '';
+    width: 0.4em;
+    height: 0.4em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform var(--transition);
+  }
+
+  details[open] summary::before {
+    transform: translateY(-0.1em) rotate(45deg);
+  }
+
+  .panel {
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+  }
+
+  .bibtex {
+    margin-block: var(--space-2) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    /* Wrap instead of scrolling so long titles and DOIs never overflow the page. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+</style>

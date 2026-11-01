@@ -1,0 +1,204 @@
+---
+import CitationDetails from './CitationDetails.astro';
+import { TYPE_LABELS, STATUS_LABELS, doiUrl, volumeAndPages } from '../lib/citations';
+import type { Publication } from '../lib/schemas';
+import { withBase } from '../lib/site';
+
+type Props = {
+  publication: Publication;
+  variant?: 'full' | 'compact' | 'cv';
+  headingLevel?: 'h2' | 'h3' | 'h4';
+};
+
+const { publication, variant = 'full', headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const detail = volumeAndPages(publication);
+const doi = publication.doi ? doiUrl(publication.doi) : undefined;
+const titleUrl = doi ?? publication.publisherUrl;
+const paperUrl = publication.publisherUrl ?? doi;
+const pdfUrl = publication.pdf?.publicUseVerified ? withBase(publication.pdf.path) : undefined;
+const statusNote = publication.status === 'published' ? undefined : STATUS_LABELS[publication.status];
+
+const count = publication.authors.length;
+// "A", "A and B", "A, B, and C": display names are shown exactly as stored, in order.
+const separatorAfter = (index: number): string => {
+  if (index >= count - 1) return '';
+  if (index === count - 2) return count === 2 ? ' and ' : ', and ';
+  return ', ';
+};
+---
+
+<li class:list={['pub', variant]} id={publication.id}>
+  <Heading class="pub-title">
+    {titleUrl ? <a href={titleUrl}>{publication.title}</a> : publication.title}
+  </Heading>
+  <p class="authors">
+    {
+      publication.authors.map((author, index) => (
+        <>{author.personId ? <strong>{author.display}</strong> : author.display}{separatorAfter(index)}</>
+      ))
+    }
+  </p>
+  <p class="venue meta">
+    <em>{publication.venue}</em>{detail && `, ${detail}`}. {publication.year}.
+    <span class="type">{TYPE_LABELS[publication.type]}{statusNote ? ` · ${statusNote}` : ''}</span>
+  </p>
+  {
+    variant !== 'compact' && doi && (
+      <p class="doi meta">
+        DOI: <a href={doi}>{publication.doi}</a>
+      </p>
+    )
+  }
+  {
+    variant !== 'compact' && (
+      <p class="note">
+        <span class="note-label">My contribution:</span> {publication.contribution}
+      </p>
+    )
+  }
+  <p class="links" hidden={variant === 'cv'}>
+    {
+      paperUrl && (
+        <a href={paperUrl}>
+          <span class="bracket" aria-hidden="true">[</span>
+          Paper<span class="sr-only"> ({paperUrl === doi ? 'DOI' : 'publisher'}), {publication.venueShort} {publication.year}</span>
+          <span class="bracket" aria-hidden="true">]</span>
+        </a>
+      )
+    }
+    {
+      pdfUrl && (
+        <a href={pdfUrl}>
+          <span class="bracket" aria-hidden="true">[</span>
+          PDF<span class="sr-only"> of the {publication.venueShort} {publication.year} paper</span>
+          <span class="bracket" aria-hidden="true">]</span>
+        </a>
+      )
+    }
+    {
+      variant === 'compact' && (
+        <a href={`${withBase('/publications/')}#${publication.id}`}>
+          <span class="bracket" aria-hidden="true">[</span>
+          Cite<span class="sr-only">: {publication.venueShort} {publication.year}</span>
+          <span class="bracket" aria-hidden="true">]</span>
+        </a>
+      )
+    }
+  </p>
+  {variant === 'full' && <CitationDetails publication={publication} />}
+</li>
+
+<style>
+  .pub {
+    padding-block: var(--space-5);
+    border-top: 0;
+    scroll-margin-top: var(--space-5);
+  }
+
+  .pub:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .pub-title {
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: 600;
+    max-width: 62ch;
+  }
+
+  .pub-title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .pub-title a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  .authors {
+    margin-top: var(--space-1);
+    max-width: 62ch;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .authors strong {
+    font-weight: 500;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .venue {
+    margin-top: var(--space-1);
+  }
+
+  .type {
+    display: inline-block;
+    margin-left: 0.4em;
+  }
+
+  .doi {
+    margin-top: var(--space-1);
+    overflow-wrap: anywhere;
+  }
+
+  .note {
+    margin-top: var(--space-3);
+    max-width: 62ch;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .note-label {
+    font-weight: 600;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-1);
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-weight: 400;
+    font-size: 0.8125rem;
+    text-decoration: none;
+  }
+
+  .bracket:first-child {
+    margin-right: 2px;
+  }
+
+  .bracket:last-child {
+    margin-left: 2px;
+  }
+
+  .links a:hover {
+    text-decoration: underline;
+  }
+
+  .compact {
+    padding-block: 0 var(--space-5);
+  }
+
+  .compact .pub-title {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .compact:last-child {
+    padding-bottom: 0;
+  }
+
+  .compact .type {
+    display: none;
+  }
+</style>

@@ -1,0 +1,33 @@
+---
+// Where the owner is based, as a quiet line with a map pin. Used under the affiliation on Home and under the
+// title on About; the place itself is `profile.location`.
+import ContactIcon from './ContactIcon.astro';
+import { profile } from '../lib/content';
+
+type Props = {
+  /** Visible lead-in such as "Based in". Without it, screen readers still hear "Location:". */
+  prefix?: string;
+};
+
+const { prefix } = Astro.props;
+---
+
+<p class="location">
+  <ContactIcon name="location" size={18} />
+  <span>{prefix ? `${prefix} ` : <span class="sr-only">Location: </span>}{profile.location}</span>
+</p>
+
+<style>
+  .location {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .location :global(svg) {
+    flex-shrink: 0;
+  }
+</style>

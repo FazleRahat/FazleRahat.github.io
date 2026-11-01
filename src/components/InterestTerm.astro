@@ -1,0 +1,171 @@
+---
+// A highlighted research term in the biography. With an `href`, hovering, focusing or tapping it
+// opens a small link to the research page, where the projects in that area are marked.
+// Without JavaScript the term is plain highlighted text (the script adds the interaction).
+type Props = {
+  term: string;
+  /** Research page URL for this area; omit when no project is tagged with it. */
+  href?: string;
+};
+
+const { term, href } = Astro.props;
+---
+
+{
+  href ? (
+    <span class="interest-term" data-interest-term>
+      <strong class="research-interest" data-interest-trigger>{term}</strong>
+      <span class="interest-popup" hidden>
+        <a class="interest-link" href={href}>
+          See my research in this domain<span class="sr-only">: {term}</span> <span aria-hidden="true">→</span>
+        </a>
+      </span>
+    </span>
+  ) : (
+    <strong class="research-interest">{term}</strong>
+  )
+}
+
+<script>
+  const terms = [...document.querySelectorAll<HTMLElement>('[data-interest-term]')];
+  const open = new Map<HTMLElement, () => void>();
+
+  for (const term of terms) {
+    const trigger = term.querySelector<HTMLElement>('[data-interest-trigger]');
+    const popup = term.querySelector<HTMLElement>('.interest-popup');
+    if (!trigger || !popup) continue;
+
+    // The term becomes a button; the link inside the popup is reachable with Tab while it is open.
+    trigger.setAttribute('role', 'button');
+    trigger.tabIndex = 0;
+    trigger.setAttribute('aria-expanded', 'false');
+    let pinned = false;
+
+    const show = () => {
+      popup.hidden = false;
+      // Keep the popup inside the viewport: right-align it when a term sits near the right edge.
+      popup.classList.remove('align-end');
+      if (popup.getBoundingClientRect().right > document.documentElement.clientWidth - 8) popup.classList.add('align-end');
+      trigger.setAttribute('aria-expanded', 'true');
+      open.set(term, hide);
+    };
+    function hide() {
+      pinned = false;
+      popup!.hidden = true;
+      trigger!.setAttribute('aria-expanded', 'false');
+      open.delete(term);
+    }
+
+    term.addEventListener('pointerenter', (event) => {
+      if (event.pointerType === 'mouse') show();
+    });
+    term.addEventListener('pointerleave', (event) => {
+      if (event.pointerType === 'mouse' && !pinned && !term.contains(document.activeElement)) hide();
+    });
+    term.addEventListener('focusin', show);
+    term.addEventListener('focusout', (event) => {
+      if (!(event.relatedTarget instanceof Node && term.contains(event.relatedTarget))) hide();
+    });
+    trigger.addEventListener('click', () => {
+      pinned = !pinned;
+      if (pinned) show();
+      else hide();
+    });
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        trigger.click();
+      }
+    });
+  }
+
+  if (terms.length > 0) {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') for (const close of [...open.values()]) close();
+    });
+    document.addEventListener('pointerdown', (event) => {
+      for (const [term, close] of [...open]) if (!(event.target instanceof Node && term.contains(event.target))) close();
+    });
+  }
+</script>
+
+<style>
+  .research-interest {
+    display: inline-block;
+    max-width: 100%;
+    transition: transform var(--transition), box-shadow var(--transition);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    padding: 0.08em 0.2em;
+    border-radius: 3px;
+    font-weight: 600;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .interest-term {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .interest-term [data-interest-trigger] {
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .research-interest:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgb(0 0 0 / 16%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .research-interest:hover {
+      transform: none;
+    }
+  }
+
+  /* The popup touches the term (its top padding is the visual gap), so the pointer never leaves the
+     term while moving onto the link. */
+  .interest-popup {
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+    padding-top: 6px;
+    white-space: nowrap;
+  }
+
+  .interest-popup.align-end {
+    left: auto;
+    right: 0;
+  }
+
+  .interest-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 44px;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-accent);
+    border-radius: var(--radius-image);
+    background: var(--color-surface);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .interest-link:hover {
+    text-decoration: underline;
+  }
+
+  @media print {
+    .interest-popup {
+      display: none;
+    }
+  }
+</style>

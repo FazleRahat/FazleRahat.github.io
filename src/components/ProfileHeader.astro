@@ -1,0 +1,363 @@
+---
+// Compact profile header (selected layout): portrait beside identity on desktop,
+// portrait above it on mobile, and a text-only block when no portrait is configured.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { Image } from 'astro:assets';
+import ContactLinks from './ContactLinks.astro';
+import LocationLine from './LocationLine.astro';
+import { profile } from '../lib/content';
+import { resolveImage } from '../lib/images';
+import { withBase } from '../lib/site';
+
+const portrait = resolveImage(profile.portrait?.src);
+// The audio is optional: a build without the file shows only the written guide.
+const hasPronunciationAudio = existsSync(join(process.cwd(), 'public/audio/fazle.wav'));
+---
+
+<section class:list={['profile', { 'has-portrait': Boolean(portrait) }]} aria-labelledby="name">
+  <div class="identity">
+    <div class="name-fact">
+      <h1 id="name"><button class="name-fact-trigger" type="button" aria-expanded="false" aria-controls="name-fun-fact" aria-describedby="name-fun-fact">Md.</button>{profile.displayName.slice(3)}</h1>
+          <span class="name-fact-popup no-print" id="name-fun-fact" role="tooltip" hidden>
+            <strong class="fact-title">Fun fact</strong>
+            <span>In Bangladeshi names, “Md.” is an abbreviation of “Mohammed.” The Bangla abbreviation <span lang="bn">“মোঃ”</span> similarly stands for <span lang="bn">“মোহাম্মদ”</span>.</span>
+          </span>
+    </div>
+    <div class="name-details">
+      {profile.nativeName && <p class="native-name" lang="bn">{profile.nativeName}</p>}
+    {profile.preferredName && (
+      <p class="preferred-name">
+        <span>Call me <strong>{profile.preferredName}</strong></span>
+        {profile.pronunciation && <span class="pronunciation"><span class="sr-only">Pronounced </span>({profile.pronunciation})</span>}
+        {hasPronunciationAudio && (
+          <>
+            <button type="button" class="pronunciation-play" data-pronunciation-play aria-label={`Hear ${profile.preferredName} pronounced`} title="Hear pronunciation (synthetic voice)" hidden>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                <path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" />
+              </svg>
+            </button>
+            <audio data-pronunciation-audio src={withBase('/audio/fazle.wav')} preload="none"></audio>
+            <span class="sr-only" data-pronunciation-status role="status"></span>
+          </>
+        )}
+      </p>
+    )}
+    </div>
+    <p class="role">{profile.headline}</p>
+    <p class="affiliation">{profile.institution} · {profile.lab}</p>
+    <LocationLine />
+    {!portrait && <ContactLinks includeEmail={false} includeEmailLink label="Contact and profiles" />}
+  </div>
+  {
+    portrait && profile.portrait && (
+      <div class="portrait-column">
+        <div class="portrait">
+          <Image
+            src={portrait}
+            alt={profile.portrait.alt}
+            width={320}
+            height={320}
+            widths={[112, 160, 224, 320]}
+            sizes="(min-width: 640px) 160px, 112px"
+            format="webp"
+            quality={80}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+        <div class="portrait-links">
+          <ContactLinks includeEmail={false} includeEmailLink label="Contact and profiles" />
+        </div>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  const fact = document.querySelector<HTMLElement>('.name-fact');
+  const trigger = fact?.querySelector<HTMLButtonElement>('.name-fact-trigger');
+  const popup = fact?.querySelector<HTMLElement>('.name-fact-popup');
+  if (fact && trigger && popup) {
+    let pinned = false;
+    const show = () => { popup.hidden = false; trigger.setAttribute('aria-expanded', 'true'); };
+    const hide = () => { popup.hidden = true; trigger.setAttribute('aria-expanded', 'false'); };
+    trigger.addEventListener('pointerenter', show);
+    fact.addEventListener('pointerleave', () => {
+      if (!pinned && document.activeElement !== trigger) hide();
+    });
+    trigger.addEventListener('focus', show);
+    trigger.addEventListener('blur', () => { pinned = false; hide(); });
+    trigger.addEventListener('click', () => { pinned = !pinned; pinned ? show() : hide(); });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') { pinned = false; hide(); }
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (event.target instanceof Node && !fact.contains(event.target)) { pinned = false; hide(); }
+    });
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-pronunciation-play]')) {
+    const scope = button.closest('.preferred-name');
+    const audio = scope?.querySelector<HTMLAudioElement>('[data-pronunciation-audio]');
+    const status = scope?.querySelector<HTMLElement>('[data-pronunciation-status]');
+    if (!audio) continue;
+    button.hidden = false;
+    const reset = () => { button.disabled = false; };
+    audio.addEventListener('ended', reset);
+    audio.addEventListener('error', () => {
+      reset();
+      if (status) status.textContent = 'Audio is unavailable. Please use the written pronunciation guide.';
+    });
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      if (status) status.textContent = '';
+      audio.currentTime = 0;
+      try {
+        await audio.play();
+      } catch {
+        reset();
+        if (status) status.textContent = 'Audio could not play. Please try again or use the written pronunciation guide.';
+      }
+    });
+  }
+</script>
+
+<style>
+  .profile {
+    display: grid;
+    gap: var(--space-4);
+    padding-top: 0;
+  }
+
+  /* The identity comes first in the document; on narrow screens the portrait column (the
+     small portrait with the profile icons under it) is shown above it, centred, and from
+     640px up it moves to the right of the identity block. */
+  .portrait-column {
+    order: -1;
+    justify-self: center;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+  }
+
+  .portrait {
+    width: 112px;
+  }
+
+  /* Centred under the picture, so the -12px edge alignment used beside the text is not needed. */
+  .portrait-links :global(.profile-icons) {
+    margin-inline-start: 0;
+    justify-content: center;
+  }
+
+  .portrait :global(img) {
+    width: 112px;
+    height: 112px;
+    /* A square frame with smoothly rounded corners and a hairline border. */
+    border: 1px solid var(--color-border);
+    border-radius: 14%;
+    object-fit: cover; /* Portrait only: scientific figures are never cropped. */
+    background: var(--color-accent-soft);
+  }
+
+  .identity {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  h1 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2rem);
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+  }
+
+  .role {
+    margin-top: var(--space-4);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .name-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-1);
+  }
+
+  .native-name {
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: normal;
+    color: var(--color-muted);
+  }
+
+  .preferred-name {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  .preferred-name strong {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .name-fact {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .name-fact-trigger {
+    font: inherit;
+    font-weight: 600;
+    color: inherit;
+    letter-spacing: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  @media print {
+    .name-fact-trigger {
+      display: inline !important;
+      text-decoration: none;
+    }
+  }
+
+  .name-fact-popup {
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+    width: min(300px, calc(100vw - 64px));
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-accent);
+    border-radius: var(--radius-image);
+    background: var(--color-surface);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+    color: var(--color-text);
+    white-space: normal;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .fact-title {
+    display: block;
+    margin-bottom: var(--space-1);
+  }
+
+  .pronunciation {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* A 44px touch target; the visible 32px circle is drawn by ::before so the look is unchanged. */
+  .pronunciation-play {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin-block: -6px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .pronunciation-play::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+  }
+
+  /* The script reveals the button after first paint on a slow connection. Reserving its space now
+     (global.css hides [hidden] with !important) stops the reveal from re-wrapping the row and moving the page. */
+  .pronunciation-play[hidden] {
+    display: inline-flex !important;
+    visibility: hidden;
+  }
+
+  .pronunciation-play:hover::before {
+    background: var(--color-accent-soft);
+  }
+
+  .pronunciation-play:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  @media print {
+    .pronunciation-play { display: none; }
+  }
+
+  .affiliation {
+    color: var(--color-muted);
+    line-height: 1.5;
+  }
+
+  .identity :global(.contact-links) {
+    margin-top: var(--space-2);
+  }
+
+  @media (min-width: 640px) {
+    .profile.has-portrait {
+      grid-template-columns: minmax(0, 1fr) 160px;
+      align-items: center;
+      gap: var(--space-6);
+    }
+
+    /* Fixed at the photo's width so the photo stays flush right; the four-icon row is a little
+       wider than the photo and overflows it equally on both sides (the visible marks line up with the photo). */
+    .portrait-column {
+      order: 0;
+      justify-self: end;
+      grid-template-columns: minmax(0, 1fr);
+      width: 160px;
+    }
+
+    .portrait-links {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .portrait {
+      width: 160px;
+    }
+
+    .portrait :global(img) {
+      width: 160px;
+      height: 160px;
+    }
+  }
+</style>

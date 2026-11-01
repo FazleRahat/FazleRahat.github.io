@@ -1,0 +1,140 @@
+---
+import { CONTEXT_LABELS, STATUS_LABELS, type ResearchEntry } from '../lib/content';
+import { areaSlugs } from '../lib/areas';
+import { doiUrl } from '../lib/citations';
+import type { Publication } from '../lib/schemas';
+
+type Props = {
+  entry: ResearchEntry;
+  /** Public publications attached to this record. */
+  publications?: Publication[];
+  variant?: 'featured' | 'default' | 'compact';
+  headingLevel?: 'h2' | 'h3';
+  /** Show the guiding question above the description (home current-research block). */
+  showQuestion?: boolean;
+};
+
+const { entry, publications = [], variant = 'default', headingLevel = 'h3', showQuestion = false } = Astro.props;
+const { data } = entry;
+const Heading = headingLevel;
+// Paper links use an explicit publisher page when supplied, otherwise the DOI.
+// Projects without a paper show no link.
+const papers = publications.flatMap((publication) => {
+  const href = publication.publisherUrl ?? (publication.doi ? doiUrl(publication.doi) : undefined);
+  return href ? [{ publication, href }] : [];
+});
+---
+
+<article class:list={['research-row', variant]} data-areas={areaSlugs(data.areas).join(' ') || undefined}>
+  <Heading class="row-title">{data.title}</Heading>
+  <p class="meta status-line">
+    <span>{STATUS_LABELS[data.status]}</span> <span aria-hidden="true">·</span>
+    <span>{CONTEXT_LABELS[data.context]}</span>
+  </p>
+  {
+    variant !== 'compact' && (
+      <p class="meta">
+        {data.role}, {data.institution}
+        {data.periodLabel && <span class="period"> · {data.periodLabel}</span>}
+      </p>
+    )
+  }
+  {showQuestion && data.question && <p class="question">{data.question}</p>}
+  <p class="blurb">{variant === 'compact' ? (data.summary ?? data.blurb) : data.blurb}</p>
+  {
+    variant !== 'compact' && (
+      <ul class="tag-list" aria-label="Topics">
+        {data.themes.map((theme) => (
+          <li>{theme}</li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    papers.length > 0 && (
+      <p class="links">
+        {papers.map(({ publication, href }) => (
+          <a class="paper" href={href}>
+            Paper<span class="sr-only">: {publication.venueShort} {publication.year}</span>
+          </a>
+        ))}
+      </p>
+    )
+  }
+</article>
+
+<style>
+  /* Keep the row's rule full width but the reading text at a comfortable measure. */
+  .research-row > * {
+    max-width: var(--measure);
+  }
+
+  .row-title {
+    font-size: 1.125rem;
+  }
+
+  .status-line {
+    margin-top: var(--space-2);
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .status-line + .meta,
+  .question,
+  .blurb,
+  .tag-list {
+    margin-top: var(--space-2);
+  }
+
+  .question {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .blurb {
+    margin-top: var(--space-3);
+  }
+
+  .tag-list {
+    margin-top: var(--space-3);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-5);
+    margin-top: var(--space-2);
+  }
+
+  .paper {
+    font-weight: 600;
+  }
+
+  .featured .row-title {
+    font-size: 1.25rem;
+  }
+
+  .compact .row-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .compact .status-line {
+    margin-top: 2px;
+    font-size: 0.8125rem;
+  }
+
+  .compact .blurb {
+    margin-top: var(--space-1);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+
+  .compact .links {
+    margin-top: var(--space-1);
+    font-size: 0.9375rem;
+  }
+</style>

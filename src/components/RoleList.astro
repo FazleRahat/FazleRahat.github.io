@@ -1,0 +1,73 @@
+---
+import { formatPeriod } from '../lib/dates';
+import type { Experience } from '../lib/schemas';
+
+type Props = {
+  roles: Experience[];
+  headingLevel?: 'h3' | 'h4';
+  /** Show each role's bullet list. The About page omits it for research roles. */
+  showHighlights?: boolean;
+};
+
+const { roles, headingLevel = 'h3', showHighlights = true } = Astro.props;
+const Heading = headingLevel;
+---
+
+<ol class="timeline">
+  {
+    roles.map((role) => (
+      <li class="timeline-item role" id={role.id}>
+        <p class="period overline">{formatPeriod(role.start, role.end, 'Present')}</p>
+        <Heading class="role-title">{role.title}</Heading>
+        <p class="org">{role.organization}</p>
+        {role.advisor && <p class="meta">Advisor: {role.advisor}</p>}
+        {role.supervisor && <p class="meta">Supervisor: {role.supervisor}</p>}
+        {showHighlights && (
+          <ul class="highlights">
+            {role.highlights.map((highlight) => (
+              <li>{highlight.text}</li>
+            ))}
+          </ul>
+        )}
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .role-title {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: var(--space-1);
+  }
+
+  .org {
+    margin-top: var(--space-1);
+  }
+
+  .period {
+    letter-spacing: 0.06em;
+  }
+
+  .meta {
+    margin-top: var(--space-1);
+  }
+
+  .highlights {
+    margin-top: var(--space-3);
+    padding-left: 1.2em;
+    max-width: var(--measure);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .highlights li + li {
+    margin-top: var(--space-2);
+  }
+
+  .highlights li::marker {
+    color: var(--color-accent);
+  }
+</style>

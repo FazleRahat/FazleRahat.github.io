@@ -1,0 +1,153 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ResearchRow from '../../components/ResearchRow.astro';
+import { areaSlug } from '../../lib/areas';
+import { getResearch, publicationsForResearch } from '../../lib/content';
+import { withBase } from '../../lib/site';
+
+const research = await getResearch();
+// Area key → display wording (first spelling used), for the "highlighting research on …" note.
+const areaLabels: Record<string, string> = {};
+for (const entry of research) for (const area of entry.data.areas ?? []) areaLabels[areaSlug(area)] ??= area;
+const current = research.filter((entry) => entry.data.status === 'ongoing');
+const earlier = research.filter((entry) => entry.data.status !== 'ongoing');
+const publicationsById = new Map(
+  await Promise.all(research.map(async (entry) => [entry.id, await publicationsForResearch(entry)] as const)),
+);
+
+---
+
+<BaseLayout
+  title="Research | Md. Fazle Rabbi Rahat"
+  description="Research on multimodal AI for hydroponic decision support, medical language models, IoMT security, and mHealth, with the status of each project and my own role in it."
+  path="/research/"
+>
+  <div class="container">
+    <h1>Research</h1>
+    <div class="overview measure">
+      <p class="lede">
+        My research asks how AI systems can connect more to people, solving their domain-specific problems and being more user-friendly and reliable. I also investigate how people are interpreting AI from their positions.
+      </p>
+      <p>
+        Current work on hydroponic decision support combines plant images, sensor data, and relevant retrieved knowledge.
+        Earlier work includes fine-tuning language models for medical text under limited computing resources and,
+        through a collaboration with a team in Kennesaw State University's mHealth Lab, a scoping review of IoMT
+        security, a military readiness and wellness framework, and a review of vaccination uptake. Each entry below
+        shows where the work stands and what my own role in it was.
+      </p>
+    </div>
+
+    <!-- Filled in by the script when the address has ?area=…, e.g. from a highlighted term on the home page. -->
+    <p class="area-note measure" role="status" data-area-note data-labels={JSON.stringify(areaLabels)} hidden>
+      <span>
+        Highlighting <strong data-area-count></strong> on <strong data-area-label></strong>.
+      </span>
+      <a href={withBase('/research/')}>Show all research</a>
+    </p>
+
+    {
+      current.length > 0 && (
+        <section class="section" aria-labelledby="current">
+          <div class="section-head">
+            <h2 id="current">Current research</h2>
+          </div>
+          <div class="rows">
+            {current.map((entry) => (
+              <ResearchRow entry={entry} publications={publicationsById.get(entry.id)} variant="featured" showQuestion />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      earlier.length > 0 && (
+        <section class="section" aria-labelledby="earlier">
+          <div class="section-head">
+            <h2 id="earlier">Earlier research and collaborations</h2>
+          </div>
+          <div class="rows">
+            {earlier.map((entry) => (
+              <ResearchRow entry={entry} publications={publicationsById.get(entry.id)} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  // Progressive enhancement: without JavaScript the page simply lists all research.
+  const note = document.querySelector<HTMLElement>('[data-area-note]');
+  const area = new URLSearchParams(location.search).get('area')?.trim().toLowerCase();
+  if (note && area) {
+    const rows = [...document.querySelectorAll<HTMLElement>('[data-areas]')].filter((row) =>
+      (row.dataset.areas ?? '').split(' ').includes(area),
+    );
+    if (rows.length > 0) {
+      const labels: Record<string, string> = JSON.parse(note.dataset.labels ?? '{}');
+      for (const row of rows) row.classList.add('is-highlighted');
+      note.querySelector('[data-area-label]')!.textContent = labels[area] ?? area;
+      note.querySelector('[data-area-count]')!.textContent = rows.length === 1 ? '1 project' : `${rows.length} projects`;
+      note.hidden = false;
+      // Bring the first match into view; keep the note visible above it when both fit on one screen.
+      const first = rows[0]!;
+      const fits = first.getBoundingClientRect().bottom - note.getBoundingClientRect().top <= window.innerHeight - 48;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      (fits ? note : first).scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+    }
+  }
+</script>
+
+<style>
+  .overview {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  .rows {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .rows > :global(* + *) {
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .area-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-5);
+    padding: var(--space-2) var(--space-4);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    background: var(--color-accent-soft);
+    font-size: 0.9375rem;
+  }
+
+  .area-note {
+    scroll-margin-top: var(--space-5);
+  }
+
+  .area-note[hidden] {
+    display: none;
+  }
+
+  /* Projects in the chosen area: a soft panel with an accent bar, kept aligned with the text column. */
+  .rows :global(.research-row.is-highlighted) {
+    scroll-margin-top: var(--space-5);
+    margin-inline: calc(var(--space-4) * -1);
+    padding-inline: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    background: var(--color-accent-soft);
+    box-shadow: inset 3px 0 0 var(--color-accent);
+  }
+
+</style>

@@ -1,0 +1,53 @@
+---
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '../styles/print.css';
+import interUrl from '../assets/fonts/inter-latin-wght-normal.woff2?url';
+import SEOHead from '../components/SEOHead.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+type Props = {
+  title: string;
+  description: string;
+  path: string;
+  type?: 'website' | 'article';
+  jsonLd?: unknown[];
+  noindex?: boolean;
+  /** Extra class on <body>, used for page-specific print rules. */
+  bodyClass?: string;
+};
+
+const { title, description, path, type, jsonLd, noindex, bodyClass } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SEOHead {title} {description} {path} {type} {jsonLd} {noindex} />
+    <link rel="preload" href={interUrl} as="font" type="font/woff2" crossorigin />
+    <!-- Applies a stored theme before first paint. Storage may be blocked, so it is guarded. -->
+    <script is:inline>
+      try {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {}
+    </script>
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+    <script>
+      import '../scripts/theme.ts';
+      import '../scripts/clipboard.ts';
+      import '../scripts/navigation.ts';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,131 @@
+---
+import { EVENT_TYPE_LABELS } from '../lib/content';
+import { doiUrl } from '../lib/citations';
+import { formatDateRange } from '../lib/dates';
+import type { Publication, SiteEvent } from '../lib/schemas';
+import { withBase } from '../lib/site';
+
+type Props = {
+  item: SiteEvent;
+  /** The paper presented, when `publicationId` is set. */
+  publication?: Publication;
+  /** "compact" omits the summary and links (home page). */
+  variant?: 'full' | 'compact';
+  headingLevel?: 'h3' | 'h4';
+};
+
+const { item, publication, variant = 'full', headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const place = [item.event, item.location].filter(Boolean).join(', ');
+
+// Links you host under /public get the base path; everything else is an https URL.
+const href = (link: string): string => (link.startsWith('/') ? withBase(link) : link);
+const labelled: [string, string | undefined][] = [
+  ['Slides', item.links.slides],
+  ['Video', item.links.video],
+  ['Poster', item.links.poster],
+  ['Abstract', item.links.abstract],
+  ['Event page', item.links.event],
+];
+const links = [
+  ...labelled.flatMap(([label, link]) => (link ? [{ label, href: href(link) }] : [])),
+  ...(publication?.doi ? [{ label: 'Paper', href: doiUrl(publication.doi) }] : []),
+];
+---
+
+<li class:list={['event', variant]} id={item.id}>
+  <Heading class="event-title">{item.title}</Heading>
+  <p class="meta kind">{formatDateRange(item.start, item.end)} · {EVENT_TYPE_LABELS[item.type]} · {item.role}</p>
+  <p class="place">{place}</p>
+  {variant === 'full' && item.summary && <p class="summary">{item.summary}</p>}
+  {
+    variant === 'full' && links.length > 0 && (
+      <p class="links">
+        {links.map((link) => (
+          <a href={link.href}>
+            <span class="bracket" aria-hidden="true">[</span>
+            {link.label}<span class="sr-only">: {item.title}</span>
+            <span class="bracket" aria-hidden="true">]</span>
+          </a>
+        ))}
+      </p>
+    )
+  }
+</li>
+
+<style>
+  .event {
+    padding-block: var(--space-5);
+    scroll-margin-top: var(--space-5);
+  }
+
+  .event:first-child {
+    padding-top: 0;
+  }
+
+  .event-title {
+    max-width: 62ch;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .kind {
+    margin-top: var(--space-1);
+  }
+
+  .place {
+    margin-top: 2px;
+    max-width: 62ch;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .summary {
+    margin-top: var(--space-3);
+    max-width: 62ch;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-1);
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    text-decoration: underline;
+  }
+
+  .bracket:first-child {
+    margin-right: 2px;
+  }
+
+  .bracket:last-child {
+    margin-left: 2px;
+  }
+
+  .compact {
+    padding-block: 0 var(--space-5);
+  }
+
+  .compact:last-child {
+    padding-bottom: 0;
+  }
+
+  .compact .event-title {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+</style>

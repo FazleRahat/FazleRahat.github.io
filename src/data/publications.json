@@ -1,0 +1,77 @@
+[
+  {
+    "id": "digimindready-2026",
+    "title": "DigiMindReady: Enhancing Military Readiness Through Edge AI-Driven Wellness, Education, and Digital Discipline Through Privacy-First mHealth Innovation",
+    "authors": [
+      { "given": "Md Mehedi", "family": "Hasan", "display": "M. M. Hasan" },
+      { "given": "Md Fazle Rabbi", "family": "Rahat", "display": "M. F. R. Rahat", "personId": "rahat" },
+      { "given": "Nafisa", "family": "Anjum", "display": "N. Anjum" },
+      { "given": "Nazmus", "family": "Sakib", "display": "N. Sakib" },
+      { "given": "Brian A.", "family": "Moore", "display": "B. A. Moore" }
+    ],
+    "year": 2026,
+    "sortOrder": 1,
+    "type": "journal-article",
+    "status": "published",
+    "venue": "Military Medicine",
+    "venueShort": "Military Medicine",
+    "volume": "191",
+    "issue": "9–10",
+    "pages": "e2039–e2048",
+    "doi": "10.1093/milmed/usag101",
+    "contribution": "Literature review, system architecture, and manuscript preparation and revisions.",
+    "researchId": "digimindready",
+    "citationKey": "hasan2026digimindready",
+    "draft": false,
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "vaccination-uptake-2026",
+    "title": "Enhancing vaccination uptake for healthy aging through context-aware mHealth systems: A systematic literature review for future smart healthcare",
+    "authors": [
+      { "given": "Md Mehedi", "family": "Hasan", "display": "M. M. Hasan" },
+      { "given": "Md Fazle Rabbi", "family": "Rahat", "display": "M. F. R. Rahat", "personId": "rahat" },
+      { "given": "Nafisa", "family": "Anjum", "display": "N. Anjum" },
+      { "given": "Mary Dioise", "family": "Ramos", "display": "M. D. Ramos" },
+      { "given": "Nazmus", "family": "Sakib", "display": "N. Sakib" }
+    ],
+    "year": 2026,
+    "sortOrder": 2,
+    "type": "journal-article",
+    "status": "published",
+    "venue": "Smart Health",
+    "venueShort": "Smart Health",
+    "volume": "41",
+    "articleNumber": "100665",
+    "doi": "10.1016/j.smhl.2026.100665",
+    "contribution": "Systematic literature review, system architecture (proposed), and manuscript preparation and revisions.",
+    "researchId": "goldenvaxshield",
+    "citationKey": "hasan2026vaccination",
+    "draft": false,
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "iomt-security-2025",
+    "title": "Optimizing IoMT Security Using Machine Learning: A Use Case-Based Scoping Review toward Smart and Connected Health",
+    "authors": [
+      { "given": "M. F. R.", "family": "Rahat", "display": "M. F. R. Rahat", "personId": "rahat" },
+      { "given": "M. M.", "family": "Hasan", "display": "M. M. Hasan" },
+      { "given": "Z.", "family": "Xie", "display": "Z. Xie" },
+      { "given": "N.", "family": "Sakib", "display": "N. Sakib" }
+    ],
+    "year": 2025,
+    "sortOrder": 1,
+    "type": "conference-paper",
+    "status": "published",
+    "venue": "ACM/IEEE International Conference on Connected Health: Applications, Systems and Engineering Technologies (CHASE)",
+    "venueShort": "CHASE",
+    "pages": "371–376",
+    "doi": "10.1145/3721201.3724412",
+    "publisherUrl": "https://ieeexplore.ieee.org/abstract/document/11120893",
+    "contribution": "Literature review, research question, taxonomy development, and manuscript preparation and revisions.",
+    "researchId": "iomt-security-review",
+    "citationKey": "rahat2025iomt",
+    "draft": false,
+    "reviewedOn": "2026-11-01"
+  }
+]

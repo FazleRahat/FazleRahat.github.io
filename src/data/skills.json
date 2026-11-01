@@ -1,0 +1,6 @@
+[
+  { "id": "ai-ml", "label": "AI / ML", "items": ["LLMs", "VLMs", "Embeddings", "Vector Databases", "RAG", "Agentic Systems"] },
+  { "id": "tools", "label": "Tools", "items": ["PyTorch", "Hugging Face Transformers", "Ollama", "LangChain"] },
+  { "id": "programming", "label": "Programming", "items": ["Python", "JavaScript", "Java", "C++"] },
+  { "id": "application-development", "label": "Application Development", "items": ["React", "Flutter", "SwiftUI"] }
+]
