@@ -1,0 +1,76 @@
+---
+// /events/ exists only while there is at least one public event. With none, no page is built (no route,
+// no sitemap entry) and the navigation hides its link; the first event in src/data/events.json brings it all back.
+// A rest route is used so that an empty list can produce zero pages.
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventEntry from '../../components/EventEntry.astro';
+import { getEvents, getPublications } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  return (await getEvents()).length > 0 ? [{ params: { slug: undefined } }] : [];
+}) satisfies GetStaticPaths;
+
+const events = await getEvents();
+const publications = new Map((await getPublications()).map((publication) => [publication.id, publication]));
+const years = [...new Set(events.map((item) => Number(item.start.slice(0, 4))))];
+---
+
+<BaseLayout
+  title="Talks and events | Md. Fazle Rabbi Rahat"
+  description="Talks, presentations, posters, and other academic events of Md. Fazle Rabbi Rahat."
+  path="/events/"
+>
+  <div class="container">
+    <h1>Talks and events</h1>
+    <p class="lede intro">Talks, presentations, posters, and other academic events.</p>
+
+    {
+      years.map((year) => (
+        <section class="section year-section" aria-labelledby={`year-${year}`}>
+          <h2 id={`year-${year}`}>{year}</h2>
+          <ol class="event-list">
+            {events
+              .filter((item) => Number(item.start.slice(0, 4)) === year)
+              .map((item) => {
+                const publication = item.publicationId ? publications.get(item.publicationId) : undefined;
+                return <EventEntry item={item} publication={publication} />;
+              })}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .intro {
+    margin-top: var(--space-4);
+  }
+
+  .year-section h2 {
+    margin-bottom: var(--space-5);
+    color: var(--color-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .year-section h2::after {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .year-section {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: var(--space-5);
+    }
+  }
+
+  .event-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

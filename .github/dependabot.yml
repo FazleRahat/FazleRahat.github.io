@@ -1,0 +1,22 @@
+# Weekly update pull requests, skipping releases less than a week old. Nothing merges or deploys
+# on its own: Check has to pass and publishing still needs the manual Deploy workflow.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']

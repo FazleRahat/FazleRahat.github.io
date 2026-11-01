@@ -1,0 +1,30 @@
+[
+  {
+    "id": "ksu-ms-it",
+    "degree": "Master of Science in Information Technology",
+    "institution": "Kennesaw State University",
+    "location": "Marietta, Georgia",
+    "start": "2026-01",
+    "expectedEnd": "2027-07",
+    "thesis": {
+      "label": "Proposed thesis",
+      "title": "Agentic multimodal AI and retrieval-augmented decision support for hydroponic production systems"
+    },
+    "researchId": "hydroponic-decision-support",
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "mbstu-bsc-cse",
+    "degree": "Bachelor of Science in Computer Science & Engineering",
+    "institution": "Mawlana Bhashani Science and Technology University",
+    "location": "Tangail, Bangladesh",
+    "start": "2020-02",
+    "end": "2025-08",
+    "thesis": {
+      "label": "Thesis",
+      "title": "A Comparative Analysis of LoRA-Based Fine-Tuning Across Open-Source Language Models Under Resource Constraints for Medical QnA Automation"
+    },
+    "researchId": "medical-language-models",
+    "reviewedOn": "2026-11-01"
+  }
+]

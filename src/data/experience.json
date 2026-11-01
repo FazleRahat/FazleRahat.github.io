@@ -1,0 +1,46 @@
+[
+  {
+    "id": "ksu-gra",
+    "kind": "research",
+    "title": "Graduate Research Assistant",
+    "organization": "iCPS Lab, Kennesaw State University",
+    "start": "2026-01",
+    "end": null,
+    "advisor": "Dr. Xu Tao",
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "mbstu-ra",
+    "kind": "research",
+    "title": "Undergraduate Research Assistant",
+    "organization": "Mawlana Bhashani Science and Technology University",
+    "start": "2024-01",
+    "end": "2025-07",
+    "advisor": "Dr. Mostofa Kamal Nasir",
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "mhealth-collaboration",
+    "kind": "collaboration",
+    "title": "Research Collaboration",
+    "organization": "Research collaboration with a team in the mHealth Lab at Kennesaw State University",
+    "start": "2023-10",
+    "end": "2025-11",
+    "supervisor": "Dr. Nazmus Sakib",
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "ksu-gta",
+    "kind": "teaching",
+    "title": "Graduate Teaching Assistant",
+    "organization": "Department of Information Technology, Kennesaw State University",
+    "start": "2026-01",
+    "end": null,
+    "highlights": [
+      {
+        "text": "Grading programming assignments and projects with detailed technical feedback, assisting with instructional materials, and supporting students through office hours."
+      }
+    ],
+    "reviewedOn": "2026-11-01"
+  }
+]

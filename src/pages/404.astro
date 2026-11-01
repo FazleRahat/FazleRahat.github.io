@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/site';
+---
+
+<BaseLayout
+  title="Page not found | Md. Fazle Rabbi Rahat"
+  description="The page you requested does not exist on this site."
+  path="/404.html"
+  noindex
+>
+  <div class="container">
+    <h1>Page not found</h1>
+    <p class="lede">The page you were looking for does not exist, or it may have moved.</p>
+    <p class="links">
+      <a class="button primary" href={withBase('/')}>Go to the home page</a>
+      <a class="button" href={withBase('/research/')}>Browse research</a>
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .lede {
+    margin-top: var(--space-4);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+</style>

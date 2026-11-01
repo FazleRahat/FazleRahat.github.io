@@ -1,0 +1,76 @@
+---
+import { profile, profileLinks } from '../lib/content';
+import { withBase } from '../lib/site';
+import ContactIcon from './ContactIcon.astro';
+import EmailContact from './EmailContact.astro';
+
+type Props = {
+  /** Include the CV page link (identity block) or only external profiles (footer). */
+  includeCv?: boolean;
+  /** Include the visible email address as the first item. */
+  includeEmail?: boolean;
+  includeCopy?: boolean;
+  /** Include the profile icons (Scholar, LinkedIn, and the CV when includeCv is set). */
+  includeProfiles?: boolean;
+  /** Start the icon row with an envelope that jumps to the "Get in touch" footer, where the addresses are. */
+  includeEmailLink?: boolean;
+  label?: string;
+};
+
+const {
+  includeCv = false,
+  includeEmail = true,
+  includeCopy = false,
+  includeProfiles = true,
+  includeEmailLink = false,
+  label = 'Contact and profiles',
+} = Astro.props;
+const links = profileLinks();
+---
+
+<ul class="inline-list contact-links" aria-label={label}>
+  {
+    includeEmail && (
+      <li>
+        <EmailContact email={profile.email} copy={includeCopy} idPrefix="profile" />
+      </li>
+    )
+  }
+  {includeEmail && profile.schoolEmail && <li><EmailContact email={profile.schoolEmail} kind="school" copy={includeCopy} idPrefix="profile" /></li>}
+  {
+    includeProfiles && (
+      <li class="profile-icons">
+        {includeEmailLink && <a class="icon-link" href="#contact" aria-label="Email" title="Email addresses (in the footer)"><ContactIcon name="email"/></a>}
+        {links.map((link) => (
+          <a class="icon-link" href={link.href} aria-label={link.label} title={link.label}><ContactIcon name={link.label}/></a>
+        ))}
+        {includeCv && <a class="icon-link" href={withBase('/cv/')} aria-label="CV" title="CV"><ContactIcon name="CV"/></a>}
+      </li>
+    )
+  }
+</ul>
+
+<style>
+  .contact-links {
+    gap: var(--space-1) var(--space-2);
+    font-size: 0.875rem;
+  }
+
+  .contact-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  /* Each icon keeps a 44px tap target around its 20px mark; the -12px pulls the first mark
+     flush with the text edge above it instead of 12px inside it. */
+  .profile-icons { display: inline-flex; gap: var(--space-1); margin-inline-start: -12px; }
+
+  .icon-link { justify-content: center; width: 44px; border-radius: var(--radius-control); }
+  .icon-link:hover { background: var(--color-accent-soft); }
+
+  .contact-links a:hover {
+    text-decoration: underline;
+  }
+</style>

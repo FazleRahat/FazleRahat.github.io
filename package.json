@@ -1,0 +1,41 @@
+{
+  "name": "rahat-academic-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.4.4",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.1",
+    "@retorquere/bibtex-parser": "^12.1.8",
+    "typescript": "^6.0.3",
+    "yaml": "^2.9.1"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "check": "astro check",
+    "validate:content": "node --disable-warning=ExperimentalWarning scripts/validate-content.mjs",
+    "test:unit": "node --disable-warning=ExperimentalWarning --test tests/unit/*.test.ts",
+    "build": "pnpm validate:content && astro build",
+    "build:release": "SITE_ENV=production pnpm build",
+    "check:output": "node --disable-warning=ExperimentalWarning scripts/check-output.mjs",
+    "preview": "astro preview",
+    "test:e2e": "playwright test tests/smoke.spec.ts",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
+    "cv:manifest": "node scripts/update-cv-manifest.mjs",
+    "verify": "pnpm validate:content && pnpm check && pnpm test:unit && pnpm build && pnpm check:output && pnpm test:e2e && pnpm test:a11y && pnpm test:subpath",
+    "measure": "node --disable-warning=ExperimentalWarning scripts/measure-budget.mjs",
+    "serve": "node scripts/serve-dist.mjs",
+    "test:subpath": "node --disable-warning=ExperimentalWarning scripts/test-subpath.mjs",
+    "brand:assets": "node scripts/make-brand-assets.mjs"
+  }
+}

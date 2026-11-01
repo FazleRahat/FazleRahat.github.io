@@ -1,0 +1,42 @@
+---
+import { skills } from '../lib/content';
+---
+
+<dl class="skills">
+  {
+    skills.map((group) => (
+      <div class="group">
+        <dt>{group.label}</dt>
+        <dd>{group.items.join(', ')}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .skills {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  .group {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  @media (min-width: 640px) {
+    .group {
+      grid-template-columns: 14rem minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+  }
+</style>

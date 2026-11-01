@@ -1,0 +1,62 @@
+---
+import ThemeSelect from './ThemeSelect.astro';
+import EmailContact from './EmailContact.astro';
+import { profile } from '../lib/content';
+
+const year = profile.contentReviewedOn.slice(0, 4);
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <section id="contact" class="contact" aria-labelledby="contact-heading" data-copy-scope>
+      <h2 id="contact-heading">Get in touch</h2>
+      <p class="measure">
+        I welcome conversations about multimodal AI, reliable language-model systems, and human-AI interaction.
+      </p>
+      <div class="email-rows">
+        <EmailContact email={profile.email} copy />
+        {profile.schoolEmail && <EmailContact email={profile.schoolEmail} kind="school" copy />}
+      </div>
+    </section>
+    <div class="footer-meta">
+      <p class="meta">
+        © {year} {profile.displayName}.
+      </p>
+      <ThemeSelect />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--space-6) var(--space-5);
+    font-size: 0.875rem;
+  }
+
+  .contact {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .contact h2 {
+    font-size: 1.125rem;
+  }
+
+  .email-rows {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-1);
+  }
+
+  .footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+</style>

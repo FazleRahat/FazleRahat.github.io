@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ethical-hacking-defense-fall-2026",
+    "title": "Ethical Hacking Defense",
+    "term": { "year": 2026, "term": "Fall" },
+    "role": "Graduate Teaching Assistant",
+    "appointmentId": "ksu-gta",
+    "sortOrder": 1,
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "os-concepts-administration-fall-2026",
+    "title": "OS Concepts & Administration",
+    "term": { "year": 2026, "term": "Fall" },
+    "role": "Graduate Teaching Assistant",
+    "appointmentId": "ksu-gta",
+    "sortOrder": 2,
+    "reviewedOn": "2026-11-01"
+  },
+  {
+    "id": "advanced-application-development-summer-2026",
+    "title": "Advanced Application Development",
+    "term": { "year": 2026, "term": "Summer" },
+    "role": "Graduate Teaching Assistant",
+    "appointmentId": "ksu-gta",
+    "sortOrder": 1,
+    "reviewedOn": "2026-11-01"
+  }
+]

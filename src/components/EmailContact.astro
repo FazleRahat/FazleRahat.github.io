@@ -1,0 +1,26 @@
+---
+import ContactIcon from './ContactIcon.astro';
+type Props = { email: string; kind?: 'personal' | 'school'; copy?: boolean; idPrefix?: string };
+const { email, kind = 'personal', copy = false, idPrefix = 'contact' } = Astro.props;
+const id = `${idPrefix}-email-${kind}`;
+const label = kind === 'personal' ? 'Personal email' : 'School email';
+---
+<span class="email-contact" data-email-kind={kind} data-copy-scope>
+  <a id={copy ? id : undefined} data-copy-value={email} href={`mailto:${email}`} title={label} aria-label={`${label}: ${email}`}>
+    <ContactIcon name={kind}/><span>{email}</span>
+  </a>
+  {copy && <>
+    <button type="button" class="copy-email" data-copy={id} data-copy-success={`${label} address copied.`} data-copy-fallback="Select and copy the address." aria-label={`Copy ${kind} email`} title={`Copy ${kind} email`} hidden>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+    <span class="sr-only" data-copy-status role="status"></span>
+  </>}
+</span>
+<style>
+  .email-contact, a { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+  a { min-height: 44px; font-size: 0.875rem; }
+  a span { overflow-wrap: anywhere; }
+  a :global(svg) { flex-shrink: 0; }
+  .copy-email { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--color-accent); cursor: pointer; flex-shrink: 0; }
+  .copy-email:hover { color: var(--color-text); }
+</style>

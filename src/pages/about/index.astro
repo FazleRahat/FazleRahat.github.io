@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EducationList from '../../components/EducationList.astro';
+import RoleList from '../../components/RoleList.astro';
+import LocationLine from '../../components/LocationLine.astro';
+import SkillList from '../../components/SkillList.astro';
+import { getEducation, getExperience, getResearchExperience, profile } from '../../lib/content';
+import { withBase } from '../../lib/site';
+
+const education = await getEducation();
+const researchRoles = await getResearchExperience();
+const teachingRoles = await getExperience('teaching');
+---
+
+<BaseLayout
+  title="About | Md. Fazle Rabbi Rahat"
+  description="Academic background of Md. Fazle Rabbi Rahat: MS in Information Technology at Kennesaw State University, research appointments, education, and technical skills."
+  path="/about/"
+>
+  <div class="container">
+    <h1>About</h1>
+    <div class="where"><LocationLine prefix="Based in" /></div>
+    <div class="bio measure">
+      {profile.bioLong.map((paragraph) => <p>{paragraph}</p>)}
+    </div>
+
+    <section class="section" aria-labelledby="education">
+      <h2 id="education">Education</h2>
+      <EducationList records={education} />
+    </section>
+
+    <section class="section" aria-labelledby="research-experience">
+      <h2 id="research-experience">Research experience</h2>
+      <RoleList roles={researchRoles} showHighlights={false} />
+    </section>
+
+    <section class="section" aria-labelledby="teaching-experience">
+      <h2 id="teaching-experience">Teaching experience</h2>
+      <RoleList roles={teachingRoles} />
+      <p class="more"><a class="link-arrow" href={withBase('/teaching/')}>Teaching and courses <span class="arrow" aria-hidden="true">→</span></a></p>
+    </section>
+
+    <section class="section" aria-labelledby="skills">
+      <h2 id="skills">Technical skills</h2>
+      <SkillList />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .where {
+    margin-top: var(--space-2);
+  }
+
+  .bio {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .more {
+    margin-top: var(--space-4);
+  }
+
+</style>

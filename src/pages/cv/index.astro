@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { profile } from '../../lib/content';
+import { formatBytes } from '../../lib/dates';
+import { withBase } from '../../lib/site';
+
+const pdfHref = withBase(profile.cv.path);
+const size = formatBytes(profile.cv.bytes);
+---
+
+<BaseLayout
+  title="CV | Md. Fazle Rabbi Rahat"
+  description="View or download the curriculum vitae of Md. Fazle Rabbi Rahat as a PDF."
+  path="/cv/"
+  bodyClass="cv-page"
+>
+  <div class="container print-urls">
+    <h1>Curriculum vitae</h1>
+
+    <div class="pdf">
+      <div class="actions">
+        <a class="button primary" href={pdfHref}>Open CV (PDF)</a>
+        <a class="button" href={pdfHref} download>Download CV (PDF)</a>
+      </div>
+      <p class="meta">
+        PDF, {size}.
+      </p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .pdf {
+    margin-top: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-image);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .pdf .meta {
+    margin-top: var(--space-3);
+  }
+
+</style>

@@ -1,0 +1,39 @@
+---
+// Hidden until the theme script confirms JavaScript is running, so visitors without
+// JS never see a control that cannot work. Without JS the CSS follows the system.
+---
+
+<div class="theme-control" data-theme-control hidden>
+  <label for="theme-select">Theme</label>
+  <select id="theme-select" class="control">
+    <option value="system">System</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+</div>
+
+<style>
+  .theme-control {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* WebKit ignores min-height on a natively drawn select, so the control is drawn here. The arrow is
+     two gradients because the CSP does not allow data: images. */
+  .theme-control select {
+    min-height: 44px;
+    padding-inline: var(--space-3) calc(var(--space-3) + 16px);
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - var(--space-3) - 5px) 50%,
+      calc(100% - var(--space-3)) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+</style>

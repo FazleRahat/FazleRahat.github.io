@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PublicationEntry from '../../components/PublicationEntry.astro';
+import { getPublications } from '../../lib/content';
+import { absolute, withBase } from '../../lib/site';
+import { publicationsJsonLd } from '../../lib/structured-data';
+
+const publications = await getPublications();
+const years = [...new Set(publications.map((publication) => publication.year))];
+---
+
+<BaseLayout
+  title="Publications | Md. Fazle Rabbi Rahat"
+  description="Peer-reviewed publications by Md. Fazle Rabbi Rahat with DOI links, contribution notes, and downloadable BibTeX citations."
+  path="/publications/"
+  jsonLd={[publicationsJsonLd(publications, absolute)]}
+>
+  <div class="container">
+    <h1>Publications</h1>
+    <p class="download">
+      <a class="button" href={withBase('/publications.bib')} download>Download bibliography (.bib)</a>
+    </p>
+
+    {
+      years.map((year) => (
+        <section class="section year-section" aria-labelledby={`year-${year}`}>
+          <h2 id={`year-${year}`}>{year}</h2>
+          <ol class="pub-list">
+            {publications
+              .filter((publication) => publication.year === year)
+              .map((publication) => (
+                <PublicationEntry publication={publication} />
+              ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .download {
+    margin-top: var(--space-5);
+  }
+
+  .year-section h2 {
+    margin-bottom: var(--space-5);
+    color: var(--color-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .year-section h2::after {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .year-section {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: var(--space-5);
+    }
+  }
+
+  .pub-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

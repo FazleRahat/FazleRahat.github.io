@@ -1,0 +1,46 @@
+{
+  "id": "rahat",
+  "displayName": "Md. Fazle Rabbi Rahat",
+  "nativeName": "মোঃ ফজলে রাব্বী রাহাত",
+  "preferredName": "Fazle",
+  "pronunciation": "FAY-zuhl",
+  "headline": "MS student · Graduate Research Assistant",
+  "bioShort": [
+    "I am an MS student in Information Technology and a Graduate Research Assistant in the Intelligent Cyber Physical Systems Lab at Kennesaw State University. I received my BSc in Computer Science & Engineering from Mawlana Bhashani Science and Technology University in Bangladesh.",
+    "My research focuses on natural language processing, large language models, multimodal agentic AI, and AI security and reliability. I have also worked in the field of smart healthcare and medical device security. I have a personal motto behind my efforts in research and development which I have developed since my early days in academia, and that is to bring technology close to people with reliability and trust."
+  ],
+  "bioLong": [
+    "I am pursuing an MS in Information Technology at Kennesaw State University, where I work as a Graduate Research Assistant in the Intelligent Cyber Physical Systems Lab with Dr. Xu Tao. My research in this lab centers on multimodal AI for agricultural decision support.",
+    "My proposed master's thesis focuses on an agentic multimodal framework for hydroponic decision support. I am building a system that retrieves relevant information and combines it with plant images and sensor readings to provide personalized recommendations. Building and testing this system with users has also shaped my interest in how people interpret AI-generated information, especially when evidence is incomplete or conflicting.",
+    "Previously, I completed my BSc in Computer Science & Engineering at Mawlana Bhashani Science and Technology University in Bangladesh. My undergraduate research with Dr. Mostofa Kamal Nasir examined fine-tuning language models for medical text interpretation under resource constraints. Through an independent collaboration with a team in Kennesaw State University's mHealth Lab, I also contributed to work on IoMT security, military readiness and wellness, and vaccination uptake.",
+    "Alongside research, I serve as a Graduate Teaching Assistant in the Department of Information Technology. I have helped faculty with courses in Python programming, operating systems and ethical hacking. I really enjoy mentoring and helping students develop their skills. Outside class, in the iCPS Lab, I have also mentored undergraduate students on their research projects."
+  ],
+  "institution": "Kennesaw State University",
+  "department": "Department of Information Technology",
+  "lab": "Intelligent Cyber Physical Systems Lab (iCPS Lab)",
+  "location": "Marietta, Georgia, USA",
+  "email": "fazlerahat65.rf@gmail.com",
+  "schoolEmail": "mrahat@students.kennesaw.edu",
+  "links": {
+    "scholar": "https://scholar.google.com/citations?user=M5JZWFAAAAAJ&hl=en",
+    "linkedin": "https://www.linkedin.com/in/md-fazle-rabbi-rahat-5bb6521a5/"
+  },
+  "researchInterests": [
+    "Natural Language Processing",
+    "Large Language Models",
+    "Agentic AI",
+    "AI Security and Reliability",
+    "Human-Centered AI"
+  ],
+  "portrait": {
+    "src": "portrait/portrait.jpg",
+    "alt": "Md. Fazle Rabbi Rahat, wearing glasses and a light gray suit with a patterned tie"
+  },
+  "cv": {
+    "path": "/files/md-fazle-rabbi-rahat-cv.pdf",
+    "reviewedOn": "2026-11-01",
+    "bytes": 174614,
+    "sha256": "369ddda18b95e23a91d6598b5cf48495ea86f7597ce19684698868835a39f74f"
+  },
+  "contentReviewedOn": "2026-11-01"
+}

@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getTeachingAppointment, getTeachingCourses } from '../../lib/content';
+import { formatPeriod, formatTerm, termKey } from '../../lib/dates';
+
+const appointment = await getTeachingAppointment();
+const courses = await getTeachingCourses();
+
+// Group by term, newest first; getTeachingCourses already orders terms chronologically.
+const terms = [...new Map(courses.map((course) => [termKey(course.term), course.term])).values()];
+---
+
+<BaseLayout
+  title="Teaching | Md. Fazle Rabbi Rahat"
+  description="Graduate Teaching Assistant appointment in the Department of Information Technology at Kennesaw State University, with the courses supported."
+  path="/teaching/"
+>
+  <div class="container">
+    <h1>Teaching</h1>
+
+    {
+      appointment && (
+        <section class="section" aria-labelledby="appointment">
+          <h2 id="appointment">{appointment.title}</h2>
+          <p class="meta period">
+            {appointment.organization} · {formatPeriod(appointment.start, appointment.end)}
+          </p>
+          <div class="measure body">
+            {appointment.highlights.map((highlight) => <p>{highlight.text}</p>)}
+            <p class="meta">
+              Responsibilities are described for the appointment as a whole, not for each course.
+            </p>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section" aria-labelledby="courses">
+      <h2 id="courses">Courses</h2>
+      {
+        terms.map((term) => (
+          <div class="term">
+            <h3>{formatTerm(term)}</h3>
+            <ul class="courses">
+              {courses
+                .filter((course) => termKey(course.term) === termKey(term))
+                .map((course) => (
+                  <li>
+                    <span class="course-title">{course.title}</span>
+                    <span class="meta"> · {course.role}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .period {
+    margin-top: calc(-1 * var(--space-3));
+  }
+
+  .body {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .term + .term {
+    margin-top: var(--space-5);
+  }
+
+  .term h3 {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+
+  .courses {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .course-title {
+    font-weight: 500;
+    font-size: 1.125rem;
+  }
+</style>

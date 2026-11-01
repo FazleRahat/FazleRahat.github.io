@@ -1,0 +1,51 @@
+---
+import { absolute, isIndexable, withBase } from '../lib/site';
+import { serializeJsonLd } from '../lib/structured-data';
+import { site } from '../lib/content';
+
+type Props = {
+  title: string;
+  description: string;
+  /** Route of this page, e.g. "/research/". Used for the canonical URL. */
+  path: string;
+  type?: 'website' | 'article';
+  jsonLd?: unknown[];
+  noindex?: boolean;
+};
+
+const { title, description, path, type = 'website', jsonLd = [], noindex = false } = Astro.props;
+
+const canonical = absolute(path);
+const socialImage = absolute('/social/default.png');
+const socialAlt = `${site.siteName} — AI research at Kennesaw State University`;
+const robots = !isIndexable || noindex ? 'noindex, nofollow' : 'index, follow';
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:site_name" content={site.siteName} />
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:image" content={socialImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={socialAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={socialImage} />
+<meta name="twitter:image:alt" content={socialAlt} />
+
+<link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+<link rel="icon" href={withBase('/favicon.ico')} sizes="32x32" />
+<link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
+<meta name="theme-color" content="#fcfcfc" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1c1d20" media="(prefers-color-scheme: dark)" />
+
+{jsonLd.map((data) => <script type="application/ld+json" set:html={serializeJsonLd(data)} />)}

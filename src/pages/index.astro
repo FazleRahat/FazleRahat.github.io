@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProfileHeader from '../components/ProfileHeader.astro';
+import ResearchRow from '../components/ResearchRow.astro';
+import PublicationEntry from '../components/PublicationEntry.astro';
+import EventEntry from '../components/EventEntry.astro';
+import InterestTerm from '../components/InterestTerm.astro';
+import { areaSlug, areaSlugs } from '../lib/areas';
+import { currentAvailability, getEvents, getExperience, getPublications, getResearch, profile, publicationsForResearch, site } from '../lib/content';
+import { formatPeriod } from '../lib/dates';
+import { absolute, withBase } from '../lib/site';
+import { homeJsonLd } from '../lib/structured-data';
+
+const research = await getResearch();
+const featured = research
+  .filter((entry) => entry.data.featuredOrder !== undefined)
+  .sort((a, b) => (a.data.featuredOrder ?? 0) - (b.data.featuredOrder ?? 0));
+const publicationsByResearch = new Map(
+  await Promise.all(featured.map(async (entry) => [entry.id, await publicationsForResearch(entry)] as const)),
+);
+const publications = await getPublications();
+const years = [...new Set(publications.map((publication) => publication.year))];
+const experience = await getExperience();
+const currentRole = experience.find((role) => role.kind === 'research' && role.end === null);
+// Shown only once there is something to list; the full list lives on /events/.
+const recentEvents = (await getEvents()).slice(0, 3);
+// The optional PhD-availability statement (site.json) is shown here, under the bio, until it expires.
+const announcement = currentAvailability(new Date().toISOString().slice(0, 10));
+// Read the lists directly from the biography so edits to a research phrase
+// (such as adding 'multimodal') are highlighted without a second content edit.
+const biography = profile.bioShort.join(' ');
+const currentAreas = biography.match(/research focuses on ([^.]+)/i)?.[1];
+const previousAreas = biography.match(/(?:worked|work) in the field of ([^.]+)/i)?.[1];
+const splitAreas = (text: string | undefined) => text
+  ? text.split(text.includes(',') ? /,\s*(?:and\s+)?/i : /\s+and\s+/i).map((area) => area.trim()).filter(Boolean)
+  : [];
+const highlightedAreas = [...new Set([
+  ...splitAreas(currentAreas),
+  ...splitAreas(previousAreas),
+  ...profile.researchInterests,
+])].sort((a, b) => b.length - a.length);
+const interestPattern = new RegExp(`(${highlightedAreas.map((interest) => interest.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+const interestNames = new Set(highlightedAreas.map((interest) => interest.toLowerCase()));
+// A highlighted term links to the research page only when some project is tagged with that area.
+const researchAreas = new Set(research.flatMap((entry) => areaSlugs(entry.data.areas)));
+const areaHref = (term: string) =>
+  researchAreas.has(areaSlug(term)) ? withBase(`/research/?area=${areaSlug(term)}`) : undefined;
+---
+
+<BaseLayout title={site.homeTitle} description={site.defaultDescription} path="/" jsonLd={[homeJsonLd(profile, site, absolute, currentRole?.title)]}>
+  <div class="container home">
+    <ProfileHeader />
+
+    <div class="bio measure">
+      {profile.bioShort.map((paragraph) => <p>{paragraph.split(interestPattern).map((part) => interestNames.has(part.toLowerCase()) ? <InterestTerm term={part} href={areaHref(part)} /> : part)}</p>)}
+    </div>
+
+    {announcement && (
+      <div class="announcement measure" role="note">
+        <p class="overline announcement-label">Announcement</p>
+        <p class="announcement-text">{announcement}</p>
+      </div>
+    )}
+
+    {featured.length > 0 && (
+      <section class="section" aria-labelledby="research">
+        <div class="section-head">
+          <h2 id="research">Featured Research</h2>
+          <a href={withBase('/research/')}>All research <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="research-list">
+          {featured.map((entry) => <ResearchRow entry={entry} publications={publicationsByResearch.get(entry.id)} variant="compact" headingLevel="h3" />)}
+        </div>
+      </section>
+    )}
+
+    <section class="section" aria-labelledby="publications">
+      <div class="section-head">
+        <h2 id="publications">Publications</h2>
+        <a href={withBase('/publications/')}>Details &amp; citations <span aria-hidden="true">↗</span></a>
+      </div>
+      {years.map((year) => (
+        <div class="year-group">
+          <h3 class="year">{year}</h3>
+          <ol class="pub-list">
+            {publications.filter((publication) => publication.year === year).map((publication) => (
+              <PublicationEntry publication={publication} variant="compact" headingLevel="h4" />
+            ))}
+          </ol>
+        </div>
+      ))}
+    </section>
+
+    {recentEvents.length > 0 && (
+      <section class="section" aria-labelledby="events">
+        <div class="section-head">
+          <h2 id="events">Talks &amp; events</h2>
+          <a href={withBase('/events/')}>All talks &amp; events <span aria-hidden="true">↗</span></a>
+        </div>
+        <ol class="event-list">
+          {recentEvents.map((item) => <EventEntry item={item} variant="compact" headingLevel="h3" />)}
+        </ol>
+      </section>
+    )}
+
+    <section class="section" aria-labelledby="experience">
+      <div class="section-head">
+        <h2 id="experience">Experience</h2>
+        <a href={withBase('/about/')}>Detailed experiences <span aria-hidden="true">↗</span></a>
+      </div>
+      <ol class="timeline experience-list">
+        {experience.map((role) => (
+          <li class="timeline-item">
+            <p class="meta period">{formatPeriod(role.start, role.end, 'Present')}</p>
+            <h3>{role.title}</h3>
+            <p class="organization">{role.organization}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="teaching-link"><a href={withBase('/teaching/')}>Teaching &amp; courses <span aria-hidden="true">↗</span></a></p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .bio {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  /* A quiet callout directly under the biography. */
+  .announcement {
+    margin-top: var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    background: var(--color-accent-soft);
+  }
+
+  .announcement-label {
+    color: var(--color-accent);
+  }
+
+  .announcement-text {
+    margin-top: 2px;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .research-list {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .year-group {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .year-group + .year-group {
+    margin-top: var(--space-5);
+  }
+
+  .year {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-muted);
+    padding-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pub-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+
+  .event-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .period {
+    font-size: 0.8125rem;
+    margin-bottom: var(--space-1);
+  }
+
+  .experience-list h3 {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .organization {
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    margin-top: 2px;
+  }
+
+  .teaching-link {
+    font-size: 0.875rem;
+    margin-top: var(--space-5);
+    padding-left: var(--space-5);
+  }
+
+  .teaching-link a {
+    text-decoration: none;
+  }
+
+  .teaching-link a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 479px) {
+    .year-group {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+  }
+</style>
