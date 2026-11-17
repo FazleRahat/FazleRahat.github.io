@@ -803,7 +803,25 @@ test.describe('research case study', () => {
     const heightDifference = () => walkthrough.locator('main').evaluate((main) =>
       Math.abs(document.documentElement.clientHeight - Math.ceil(main.getBoundingClientRect().height)),
     );
+    const arrowheadsAlign = () => walkthrough.locator('.wires').evaluate((svg) => {
+      const endpoints = Array.from(svg.querySelectorAll<SVGPathElement>('path.wire'), (wire) => {
+        const length = wire.getTotalLength();
+        return { tip: wire.getPointAtLength(length), shaft: wire.getPointAtLength(length - 7) };
+      });
+      return endpoints.every(({ tip, shaft }, index) => {
+        const dx = Math.abs(tip.x - shaft.x);
+        const dy = Math.abs(tip.y - shaft.y);
+        const straight = Math.min(dx, dy) < 0.25 && Math.max(dx, dy) > 6.75;
+        const separated = endpoints.slice(index + 1).every(({ tip: other }) =>
+          Math.hypot(tip.x - other.x, tip.y - other.y) >= 8,
+        );
+        return straight && separated;
+      });
+    });
     await expect.poll(heightDifference).toBeLessThanOrEqual(1);
+    await expect(walkthrough.getByRole('heading', { name: 'Data acquisition in the lab' })).toHaveCount(0);
+    await expect(walkthrough.locator('path.wire')).toHaveCount(7);
+    await expect.poll(arrowheadsAlign).toBe(true);
     await expect(walkthrough.getByRole('button', { name: 'Library', exact: true })).toHaveAttribute('aria-pressed', 'true');
     const play = walkthrough.getByRole('button', { name: 'Play', exact: true });
     await play.click();
@@ -825,6 +843,7 @@ test.describe('research case study', () => {
     for (const width of [743, 1280]) {
       await page.setViewportSize({ width, height: 761 });
       await expect.poll(heightDifference).toBeLessThanOrEqual(1);
+      await expect.poll(arrowheadsAlign).toBe(true);
     }
   });
 
