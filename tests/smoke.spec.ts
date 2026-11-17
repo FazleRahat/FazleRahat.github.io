@@ -1,8 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import sharp from 'sharp';
+import { HYDROPONIC_CASE_STUDY_PATH } from '../src/lib/hydroponic-case-study';
 import { ALL_PAGES, NAV_LABELS, PRIMARY_ROUTES, REMOVED_CASE_STUDY_ROUTES, events, experience, hasPublicEvents, profile, publications, rel, site } from './helpers';
 
 const WIDTHS = [320, 390, 768, 1024, 1440];
+const HYDROPONIC_TITLE = 'A multimodal decision support framework for hydroponic production systems';
 
 const headingTexts = (page: Page, level: 'h2' | 'h3') => page.locator(`main ${level}`).allTextContents();
 
@@ -251,8 +253,8 @@ test.describe('home page: compact profile header', () => {
 
   test('keeps the research status honest', async ({ page }) => {
     await page.goto('');
-    const current = page.locator('section[aria-labelledby="research"] article').filter({ hasText: 'Multimodal agentic AI for hydroponic decision support' });
-    await expect(current).toContainText('Multimodal agentic AI for hydroponic decision support');
+    const current = page.locator('section[aria-labelledby="research"] article').filter({ hasText: HYDROPONIC_TITLE });
+    await expect(current).toContainText(HYDROPONIC_TITLE);
     await expect(current).toContainText('Ongoing · Proposed MS thesis');
     await expect(current).toContainText('plant images, sensor readings, and relevant retrieved knowledge');
     await expect(page.locator('main')).not.toContainText(/PhD candidate|Dr\. Md/);
@@ -265,12 +267,12 @@ test.describe('home page: compact profile header', () => {
     const found = await rows.evaluateAll((items) =>
       items.map((item) => ({
         title: item.querySelector('.row-title')?.textContent?.trim(),
-        papers: [...item.querySelectorAll('a')].map((link) => link.getAttribute('href')),
+        papers: [...item.querySelectorAll('a.paper')].map((link) => link.getAttribute('href')),
       })),
     );
     const doi = (id: string) => `https://doi.org/${publications.find((publication) => publication.id === id)!.doi}`;
     expect(found).toEqual([
-      { title: 'Multimodal agentic AI for hydroponic decision support', papers: [] },
+      { title: HYDROPONIC_TITLE, papers: [] },
       { title: 'DigiMindReady: AI-supported readiness and wellness', papers: [doi('digimindready-2026')] },
       { title: 'Machine learning for IoMT security', papers: ['https://ieeexplore.ieee.org/abstract/document/11120893'] },
     ]);
@@ -307,6 +309,7 @@ test.describe('navigation', () => {
   test('marks the current page in the primary navigation', async ({ page }) => {
     for (const [route, label] of [
       ['/research/', 'Research'],
+      [HYDROPONIC_CASE_STUDY_PATH, 'Research'],
       ['/publications/', 'Publications'],
       ...(hasPublicEvents ? [['/events/', 'Talks & Events']] : []),
       ['/teaching/', 'Teaching'],
@@ -752,8 +755,80 @@ test.describe('academic pages', () => {
   });
 });
 
-test.describe('research without case-study pages', () => {
-  test('the per-project routes return 404 and no page links below /research/', async ({ page }) => {
+test.describe('research case study', () => {
+  test('the hydroponics case study is linked from Home and Research', async ({ page }) => {
+    for (const route of ['/', '/research/']) {
+      await page.goto(rel(route));
+      const project = page.locator('article.research-row').filter({
+        has: page.getByRole('heading', { name: HYDROPONIC_TITLE }),
+      });
+      const link = project.getByRole('link', { name: 'Details', exact: true });
+      await expect(project).toBeVisible();
+      await expect(project.locator('p.question')).toHaveCount(0);
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', new RegExp(`${HYDROPONIC_CASE_STUDY_PATH}$`));
+      await link.click();
+      await expect(page.getByRole('heading', { level: 1, name: HYDROPONIC_TITLE })).toBeVisible();
+    }
+
+    const demo = page.getByRole('region', { name: 'System in action' });
+    await expect(demo).toContainText('simulated sensor readings');
+    await expect(demo).toContainText('Farm photos and Source pages');
+    await expect(demo.locator('figcaption')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'How it works' })).toBeVisible();
+    await page.getByRole('link', { name: 'Back to research' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Research' })).toBeVisible();
+  });
+
+  test('the case study loads its media and the walkthrough fits the viewport', async ({ page, request }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(rel(HYDROPONIC_CASE_STUDY_PATH));
+
+    const fullSize = page.getByRole('link', { name: 'Open the full-size conversation screenshot' });
+    for (const image of [page.getByRole('img', { name: /^Research poster collage/ }), fullSize.getByRole('img')]) {
+      await image.scrollIntoViewIfNeeded();
+      expect(await image.evaluate(async (element) => {
+        const img = element as HTMLImageElement;
+        await img.decode();
+        return img.naturalWidth;
+      })).toBeGreaterThan(0);
+    }
+    const fullSizeUrl = await fullSize.evaluate((link) => (link as HTMLAnchorElement).href);
+    expect((await request.get(fullSizeUrl)).headers()['content-type']).toContain('image/webp');
+
+    const frame = page.getByRole('region', { name: 'How it works' }).locator('iframe');
+    await frame.scrollIntoViewIfNeeded();
+    const walkthrough = frame.contentFrame();
+    const heightDifference = () => walkthrough.locator('main').evaluate((main) =>
+      Math.abs(document.documentElement.clientHeight - Math.ceil(main.getBoundingClientRect().height)),
+    );
+    await expect.poll(heightDifference).toBeLessThanOrEqual(1);
+    await expect(walkthrough.getByRole('button', { name: 'Library', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    const play = walkthrough.getByRole('button', { name: 'Play', exact: true });
+    await play.click();
+    await walkthrough.getByRole('button', { name: 'Pause', exact: true }).click();
+    await expect(play).toBeVisible();
+
+    const photos = walkthrough.getByRole('button', { name: 'Plant photos', exact: true });
+    await photos.click();
+    await expect(photos).toHaveAttribute('aria-pressed', 'true');
+    await walkthrough.getByRole('button', { name: 'Sensor readings', exact: true }).click();
+    const next = walkthrough.getByRole('button', { name: 'Next step' });
+    await next.click();
+    await expect(walkthrough.locator('#step-title')).toHaveText('Time understanding');
+    await walkthrough.getByRole('button', { name: 'Run demo refresh' }).click();
+    await next.click();
+    await expect(walkthrough.locator('#step-title')).toHaveText('Vision-language model');
+    await next.click();
+    await expect(walkthrough.locator('#step-title')).toHaveText('Photo journal');
+    for (const width of [743, 1280]) {
+      await page.setViewportSize({ width, height: 761 });
+      await expect.poll(heightDifference).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('earlier research has no per-project pages or links', async ({ page }) => {
     for (const route of REMOVED_CASE_STUDY_ROUTES) {
       const response = await page.goto(rel(route));
       expect(response?.status(), route).toBe(404);
@@ -764,19 +839,18 @@ test.describe('research without case-study pages', () => {
       const paths = await page.locator('a[href]').evaluateAll((anchors) =>
         anchors.map((anchor) => new URL((anchor as HTMLAnchorElement).href).pathname),
       );
-      expect(paths.filter((path) => /\/research\/[^/]+/.test(path)), route).toEqual([]);
-      await expect(page.getByRole('link', { name: /case study|research context/i }), route).toHaveCount(0);
+      expect(paths.filter((path) => /\/research\/[^/]+/.test(path) && !path.endsWith(HYDROPONIC_CASE_STUDY_PATH)), route).toEqual([]);
     }
   });
 
   test('the research overview lists all five projects, with the ongoing one first', async ({ page }) => {
     await page.goto(rel('/research/'));
-    // Titles are plain headings, not links; the only links on a row are papers.
+    // Titles remain headings and any project links follow the description.
     await expect(page.locator('main article .row-title a')).toHaveCount(0);
     await expect(page.locator('main')).toContainText('Ongoing · Proposed MS thesis');
     const titles = await page.locator('main article .row-title').allTextContents();
     expect(titles).toEqual([
-      'Multimodal agentic AI for hydroponic decision support',
+      HYDROPONIC_TITLE,
       'Medical language models under resource constraints',
       'Machine learning for IoMT security',
       'DigiMindReady: AI-supported readiness and wellness',
@@ -787,7 +861,7 @@ test.describe('research without case-study pages', () => {
 });
 
 test.describe('research areas', () => {
-  const H = 'Multimodal agentic AI for hydroponic decision support';
+  const H = HYDROPONIC_TITLE;
   const M = 'Medical language models under resource constraints';
   const I = 'Machine learning for IoMT security';
   const D = 'DigiMindReady: AI-supported readiness and wellness';

@@ -2,7 +2,9 @@
 import { CONTEXT_LABELS, STATUS_LABELS, type ResearchEntry } from '../lib/content';
 import { areaSlugs } from '../lib/areas';
 import { doiUrl } from '../lib/citations';
+import { HYDROPONIC_CASE_STUDY_PATH, HYDROPONIC_RESEARCH_ID } from '../lib/hydroponic-case-study';
 import type { Publication } from '../lib/schemas';
+import { withBase } from '../lib/site';
 
 type Props = {
   entry: ResearchEntry;
@@ -17,8 +19,8 @@ type Props = {
 const { entry, publications = [], variant = 'default', headingLevel = 'h3', showQuestion = false } = Astro.props;
 const { data } = entry;
 const Heading = headingLevel;
+const hasCaseStudy = entry.id === HYDROPONIC_RESEARCH_ID;
 // Paper links use an explicit publisher page when supplied, otherwise the DOI.
-// Projects without a paper show no link.
 const papers = publications.flatMap((publication) => {
   const href = publication.publisherUrl ?? (publication.doi ? doiUrl(publication.doi) : undefined);
   return href ? [{ publication, href }] : [];
@@ -51,8 +53,11 @@ const papers = publications.flatMap((publication) => {
     )
   }
   {
-    papers.length > 0 && (
+    (hasCaseStudy || papers.length > 0) && (
       <p class="links">
+        {hasCaseStudy && (
+          <a href={withBase(HYDROPONIC_CASE_STUDY_PATH)}>Details</a>
+        )}
         {papers.map(({ publication, href }) => (
           <a class="paper" href={href}>
             Paper<span class="sr-only">: {publication.venueShort} {publication.year}</span>
@@ -109,7 +114,7 @@ const papers = publications.flatMap((publication) => {
     margin-top: var(--space-2);
   }
 
-  .paper {
+  .links a {
     font-weight: 600;
   }
 

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { HYDROPONIC_CASE_STUDY_PATH } from '../src/lib/hydroponic-case-study';
 
 const read = (relative: string) => JSON.parse(readFileSync(fileURLToPath(new URL(`../${relative}`, import.meta.url)), 'utf8'));
 
@@ -13,10 +14,9 @@ export const experience: { title: string; kind: string; end: string | null }[] =
 export const hasPublicEvents = events.some((item) => !item.draft);
 export const PRIMARY_ROUTES = ['/', '/research/', '/publications/', ...(hasPublicEvents ? ['/events/'] : []), '/teaching/', '/about/', '/cv/'];
 export const NAV_LABELS = ['Research', 'Publications', ...(hasPublicEvents ? ['Talks & Events'] : []), 'Teaching', 'About', 'CV'];
-export const ALL_PAGES = PRIMARY_ROUTES;
-/** Per-project pages that used to exist and must now return 404. */
+export const ALL_PAGES = [...PRIMARY_ROUTES, HYDROPONIC_CASE_STUDY_PATH];
+/** Earlier projects are represented by rows on the research overview. */
 export const REMOVED_CASE_STUDY_ROUTES = [
-  'hydroponic-decision-support',
   'medical-language-models',
   'iomt-security-review',
   'digimindready',

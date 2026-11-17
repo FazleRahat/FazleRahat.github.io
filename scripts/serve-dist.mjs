@@ -27,6 +27,8 @@ const TYPES = {
   '.txt': 'text/plain; charset=utf-8',
   '.bib': 'application/x-bibtex; charset=utf-8',
   '.pdf': 'application/pdf',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',

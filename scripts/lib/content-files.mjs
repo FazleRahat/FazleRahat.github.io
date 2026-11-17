@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
+import { HYDROPONIC_CASE_STUDY_PATH } from '../../src/lib/hydroponic-case-study.ts';
 
 export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -55,6 +56,8 @@ export function loadSitemapDates() {
     switch (path) {
       case '/research/':
         return toIso(latest(research.map((entry) => entry.data.reviewedOn)));
+      case HYDROPONIC_CASE_STUDY_PATH:
+        return undefined;
       case '/publications/':
         return toIso(latest(publications.map((record) => record.reviewedOn)));
       case '/events/':

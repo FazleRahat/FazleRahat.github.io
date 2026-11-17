@@ -10,6 +10,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { isAbsolute, join, relative, sep } from 'node:path';
 import { parse as parseBibtex } from '@retorquere/bibtex-parser';
 import { resolveSiteConfig } from '../site.config.mjs';
+import { HYDROPONIC_CASE_STUDY_PATH, HYDROPONIC_DIAGRAM_PATH, HYDROPONIC_RESEARCH_ID } from '../src/lib/hydroponic-case-study.ts';
 import { ROOT, loadRawContent } from './lib/content-files.mjs';
 
 const distFlag = process.argv.indexOf('--dist');
@@ -34,7 +35,8 @@ const walk = (dir) =>
 const files = walk(DIST);
 const rel = (file) => relative(DIST, file).split(sep).join('/');
 const fileSet = new Set(files.map(rel));
-const htmlFiles = files.filter((file) => file.endsWith('.html'));
+// The architecture walkthrough is a self-contained asset displayed in its own frame.
+const htmlFiles = files.filter((file) => file.endsWith('.html') && rel(file) !== HYDROPONIC_DIAGRAM_PATH.slice(1));
 const routeOfFile = (file) => {
   const path = rel(file);
   if (path === 'index.html') return '/';
@@ -203,9 +205,11 @@ for (const path of fileSet) if (/\.(?:md|mdx|ts|map)$/.test(path)) problem(path,
 // --- Expected routes, sitemap, robots -----------------------------------------------------------
 const publicPublications = content.publications.filter((record) => !record.draft);
 const publicEvents = content.events.filter((record) => !record.draft);
+const hasHydroponicCaseStudy = content.research.some((entry) => entry.id === HYDROPONIC_RESEARCH_ID && !entry.data.draft);
 const expectedRoutes = [
   '/',
   '/research/',
+  ...(hasHydroponicCaseStudy ? [HYDROPONIC_CASE_STUDY_PATH] : []),
   '/publications/',
   ...(publicEvents.length > 0 ? ['/events/'] : []),
   '/teaching/',
@@ -219,15 +223,8 @@ if (publicEvents.length === 0) {
     if (page.html.includes(`href="${site.base}events/"`)) problem(page.path, 'links to /events/ although there are no public events');
   }
 }
-// Research has no pages of its own: only /research/ exists, and nothing may link to a page below it.
-// (/research/?area=… is the overview itself with one area highlighted, so a query or fragment is fine.)
-for (const entry of content.research) {
-  if (fileSet.has(`research/${entry.id}/index.html`)) problem(`research/${entry.id}/`, 'research case-study pages were removed, but one was built');
-}
-const belowResearch = new RegExp(`href="${site.base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}research/[^"?#]+[^"]*"`);
 for (const page of pages) {
-  const link = page.html.match(belowResearch)?.[0];
-  if (link) problem(page.path, `links to a research case-study page (${link})`);
+  if (page.route.startsWith('/research/') && !expectedRoutes.includes(page.route)) problem(page.path, 'unexpected research page');
 }
 for (const route of expectedRoutes) if (!fileSet.has(targetFile(site.base + route.slice(1)))) problem(route, 'expected route was not built');
 if (!fileSet.has('404.html')) problem('404.html', 'missing');

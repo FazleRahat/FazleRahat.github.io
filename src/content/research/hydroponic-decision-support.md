@@ -1,9 +1,8 @@
 ---
-title: "Multimodal agentic AI for hydroponic decision support"
+title: "A multimodal decision support framework for hydroponic production systems"
 shortTitle: "Hydroponic decision support"
 summary: "A local, agentic system that brings together plant images, sensor readings, and relevant retrieved knowledge to support decisions in hydroponic production. It is my proposed MS thesis and ongoing work in the iCPS Lab."
 blurb: "I am developing a local, agentic system that combines plant images, sensor readings, and relevant knowledge through retrieval, multimodal context selection, and sensor-access tools. My work includes the integration pipeline and sensor infrastructure, alongside investigations into hallucination, insufficient evidence, and disagreement across modalities. I am also interested in how users interpret the system's responses and how it can communicate the limits of its evidence."
-question: "How can a decision-support system bring together what a plant looks like, what sensors measure, and what the literature says?"
 status: ongoing
 context: proposed-ms-thesis
 role: "Graduate Research Assistant"

@@ -1,0 +1,184 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import testbed from '../../assets/personalized-agronomist/data-acquisition-poster-photo.png';
+import replay from '../../assets/personalized-agronomist/nov09-full-conversation-replay.webp';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CONTEXT_LABELS, getResearch, STATUS_LABELS } from '../../lib/content';
+import {
+  HYDROPONIC_CASE_STUDY_PATH,
+  HYDROPONIC_DIAGRAM_PATH,
+  HYDROPONIC_RESEARCH_ID,
+} from '../../lib/hydroponic-case-study';
+import type { Research } from '../../lib/schemas';
+import { withBase } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const entry = (await getResearch()).find(({ id }) => id === HYDROPONIC_RESEARCH_ID);
+  return entry ? [{ params: { slug: entry.id }, props: { research: entry.data } }] : [];
+}) satisfies GetStaticPaths;
+
+type Props = { research: Research };
+
+const { research }: Props = Astro.props;
+
+Astro.csp.insertDirective("frame-src 'self'");
+---
+
+<BaseLayout
+  title={`${research.title} | Md. Fazle Rabbi Rahat`}
+  description="A research case study on using plant photos, sensor history, and cited guidance to support hydroponic growing decisions."
+  path={HYDROPONIC_CASE_STUDY_PATH}
+  type="article"
+  mainLabelledBy="case-study-title"
+>
+  <article class="container">
+    <header class="case-header">
+      <a class="meta back" href={withBase('/research/')}>Back to research</a>
+      <h1 id="case-study-title">{research.title}</h1>
+      <p class="lede">
+        I’m building a local AI assistant that combines plant photos, sensor history, and cited growing guidance
+        to help hydroponic growers decide what to check next.
+      </p>
+      <div class="meta">
+        <p>{STATUS_LABELS[research.status]} · {CONTEXT_LABELS[research.context]}</p>
+        <p>{research.role}, {research.institution}{research.advisor && ` · Advised by ${research.advisor}`}</p>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="testbed">
+      <h2 id="testbed">Research testbed</h2>
+      <p class="measure">
+        When a grower asks how the plants are doing, a photo can help describe their visible condition. A sensor
+        history can reveal a change earlier in the day, and growing guidance can help the grower decide what to
+        check. I use a nutrient film technique bench at the iCPS Lab to bring those sources together.
+      </p>
+      <p class="measure">
+        The sensor feed tracks pH, electrical conductivity (EC), water temperature, air temperature, relative
+        humidity, reservoir level, and photosynthetic photon flux density (PPFD). The testbed uses a quantum
+        light sensor for PPFD, an ultrasonic distance sensor for reservoir level, and a Raspberry Pi camera
+        for plant images.
+      </p>
+      <figure>
+        <Image
+          src={testbed}
+          alt="Research poster collage showing the hydroponic bench, quantum light sensor, Raspberry Pi camera, sensor assembly, and a robot dog."
+        />
+        <figcaption class="meta">The hydroponic bench and data acquisition setup pictured in the research poster.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section" aria-labelledby="demo">
+      <h2 id="demo">System in action</h2>
+      <p class="measure">
+        A grower can ask about their plants in plain language. The assistant draws on plant photos, sensor history,
+        and the reference library to describe what it sees, flag changes in the readings, and cite relevant growing
+        guidance. The example below uses simulated sensor readings.
+      </p>
+      <p class="meta measure">
+        In the app, expand <strong>Farm photos</strong> and <strong>Source pages</strong> to inspect the images and
+        cited pages. Select the screenshot to view it at full size.
+      </p>
+      <figure>
+        <a class="demo-image" href={replay.src} aria-label="Open the full-size conversation screenshot">
+          <Image
+            src={replay}
+            alt="The assistant answers a plant health question using lettuce photos, simulated sensor readings, and cited library guidance."
+          />
+        </a>
+      </figure>
+    </section>
+
+    <section class="section" aria-labelledby="how-it-works">
+      <h2 id="how-it-works">How it works</h2>
+      <p class="measure">
+        The assistant routes library, plant-photo, and sensor questions to the relevant data. Depending on the
+        question, it resolves the time window, fetches observations or readings, and retrieves and ranks source
+        passages. The selected evidence then goes into answer generation and response checks.
+      </p>
+      <p class="measure">
+        The separate <strong>Run demo refresh</strong> flow uses a vision-language model to save observations to the
+        photo journal. The walkthrough uses simulated sensor readings.
+      </p>
+      <figure>
+        <iframe
+          class="architecture"
+          title="Interactive architecture walkthrough"
+          src={withBase(HYDROPONIC_DIAGRAM_PATH)}
+          sandbox="allow-scripts"
+          loading="lazy"
+          height="1150"
+        />
+      </figure>
+    </section>
+
+    <section class="section" aria-labelledby="contribution">
+      <h2 id="contribution">My contribution and ongoing research</h2>
+      <p class="measure">
+        I designed the pipeline that selects and combines plant observations, sensor data, and retrieved passages.
+        I also deployed the lab’s sensor infrastructure and integrated access to readings into the assistant.
+      </p>
+      <p class="measure">
+        I’m investigating how the system responds when evidence is incomplete or conflicting, and how it can make
+        those limits clear to growers.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  const frame = document.querySelector<HTMLIFrameElement>('.architecture');
+  if (frame) {
+    const requestHeight = () => frame.contentWindow?.postMessage('hydroponic-diagram-measure', '*');
+    window.addEventListener('message', ({ source, data }) => {
+      if (source !== frame.contentWindow || data?.type !== 'hydroponic-diagram-height') return;
+      const { height } = data;
+      if (typeof height !== 'number' || !Number.isFinite(height) || height <= 0) return;
+      const borderHeight = frame.offsetHeight - frame.clientHeight;
+      frame.height = String(Math.ceil(height) + borderHeight);
+    });
+    frame.addEventListener('load', requestHeight);
+    requestHeight();
+  }
+</script>
+
+<style>
+  .case-header {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .back {
+    justify-self: start;
+    color: var(--color-accent);
+  }
+
+  .section > p + p {
+    margin-top: var(--space-3);
+  }
+
+  figure {
+    margin-top: var(--space-5);
+  }
+
+  figure img,
+  .architecture {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-image);
+  }
+
+  figcaption {
+    margin-top: var(--space-2);
+  }
+
+  .demo-image {
+    display: block;
+    width: fit-content;
+  }
+
+  .architecture {
+    display: block;
+    width: 100%;
+    background: var(--color-surface);
+  }
+</style>
